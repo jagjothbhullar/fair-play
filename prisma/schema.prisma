@@ -186,6 +186,174 @@ model Brand {
 }
 
 // ============================================================================
+// BRAND DISCOVERY & RECOMMENDATIONS
+// ============================================================================
+
+model OpportunityBrand {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?  @db.Text
+  logoUrl           String?
+  websiteUrl        String?
+  applicationUrl    String?  // Where to apply/pitch
+  contactEmail      String?
+
+  // Categorization
+  industry          String   // "food_beverage", "apparel", "tech", "automotive", etc.
+  subcategory       String?  // "energy_drinks", "athletic_wear", "gaming", etc.
+
+  // Location/Geographic Targeting
+  reach             BrandReach  @default(NATIONAL)
+  headquarters      String?     // City, State
+  activeStates      String[]    // States where they do deals ["CA", "TX", "NY"]
+  activeMetros      String[]    // Metro areas ["San Francisco Bay Area", "Los Angeles"]
+  schoolPartnerships String[]   // Schools they have existing relationships with
+
+  // Creator/Athlete Fit
+  targetCreatorTypes CreatorType[]
+  targetSports       String[]    // ["basketball", "football", "all"]
+  targetNiches       String[]    // ["fitness", "gaming", "fashion", "music"]
+  minFollowers       Int?        // Minimum social following
+  maxFollowers       Int?        // Some brands want micro-influencers
+  preferredPlatforms String[]    // ["instagram", "tiktok", "youtube", "twitch"]
+
+  // Deal Characteristics
+  typicalDealTypes   DealType[]
+  budgetTier         BudgetTier  @default(MID)
+  avgDealValueMin    Int?        // Typical minimum deal value
+  avgDealValueMax    Int?        // Typical maximum deal value
+  paysProductOnly    Boolean     @default(false)
+  exclusivityRequired Boolean    @default(false)
+
+  // Engagement & Reputation
+  responseRate       ResponseRate @default(UNKNOWN)
+  paymentReliability PaymentReliability @default(UNKNOWN)
+  isActive           Boolean     @default(true)
+  isPremiumPartner   Boolean     @default(false) // Featured/verified brands
+
+  // Metadata
+  notes              String?     @db.Text // Internal notes about the brand
+  lastVerifiedAt     DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  // Relations
+  dealReports        BrandDealReport[]
+
+  @@index([industry])
+  @@index([reach])
+  @@index([budgetTier])
+}
+
+// Community-sourced deal reports (after users complete deals)
+model BrandDealReport {
+  id              String   @id @default(cuid())
+  brandId         String
+  brand           OpportunityBrand @relation(fields: [brandId], references: [id])
+
+  // Anonymous reporting (no direct link to user for privacy)
+  creatorType     CreatorType
+  sport           String?
+  followerCount   Int?
+  platform        String?  // Where the deal was sourced
+
+  // Deal details
+  dealType        DealType
+  dealValue       Int?     // Approximate value
+  wasProductOnly  Boolean  @default(false)
+
+  // Experience ratings (1-5)
+  communicationRating   Int?
+  paymentSpeedRating    Int?
+  overallRating         Int?
+  wouldWorkAgain        Boolean?
+
+  // Qualitative
+  prosNotes       String?  @db.Text
+  consNotes       String?  @db.Text
+  tips            String?  @db.Text // Advice for others
+
+  isVerified      Boolean  @default(false) // Admin verified
+  createdAt       DateTime @default(now())
+
+  @@index([brandId])
+  @@index([creatorType])
+}
+
+// User-saved opportunities
+model SavedOpportunity {
+  id              String   @id @default(cuid())
+
+  // Polymorphic - can be athlete or generic user
+  supabaseUserId  String
+  brandId         String
+
+  status          OpportunityStatus @default(SAVED)
+  notes           String?
+  appliedAt       DateTime?
+  followUpAt      DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([supabaseUserId, brandId])
+  @@index([supabaseUserId])
+}
+
+// ============================================================================
+// RECOMMENDATION ENUMS
+// ============================================================================
+
+enum BrandReach {
+  LOCAL        // Single city/metro
+  REGIONAL     // Multi-city or state-level
+  NATIONAL     // Nationwide
+  INTERNATIONAL
+}
+
+enum CreatorType {
+  COLLEGE_ATHLETE
+  PRO_ATHLETE
+  INFLUENCER
+  STREAMER
+  MUSICIAN
+  PODCASTER
+  YOUTUBER
+  OTHER_CREATOR
+}
+
+enum BudgetTier {
+  MICRO        // $0-500 deals
+  SMALL        // $500-2000
+  MID          // $2000-10000
+  LARGE        // $10000-50000
+  ENTERPRISE   // $50000+
+}
+
+enum ResponseRate {
+  UNKNOWN
+  LOW          // <20% response rate
+  MEDIUM       // 20-50%
+  HIGH         // >50%
+}
+
+enum PaymentReliability {
+  UNKNOWN
+  POOR         // Frequent late/missing payments reported
+  FAIR         // Some issues reported
+  GOOD         // Generally reliable
+  EXCELLENT    // Always pays on time
+}
+
+enum OpportunityStatus {
+  SAVED
+  APPLIED
+  IN_TALKS
+  DECLINED
+  COMPLETED
+}
+
+// ============================================================================
 // COMPLIANCE ENGINE
 // ============================================================================
 
