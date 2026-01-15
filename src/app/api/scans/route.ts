@@ -28,6 +28,9 @@ export async function GET(request: NextRequest) {
         summary: true,
         overallRisk: true,
         redFlagsCount: true,
+        redFlags: true,
+        keyTerms: true,
+        suggestedRedlines: true,
         createdAt: true,
       },
     })

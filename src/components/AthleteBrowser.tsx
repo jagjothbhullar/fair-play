@@ -141,6 +141,28 @@ export default function AthleteBrowser() {
     return labels[tier] || tier
   }
 
+  // Anonymization helpers
+  const getAnonymizedTitle = (athlete: SyntheticAthlete): string => {
+    const sportName = athlete.sport.replace("Men's ", '').replace("Women's ", '')
+    return `${athlete.sport.includes("Women's") ? "Women's" : athlete.sport.includes("Men's") ? "Men's" : ""} ${sportName} Athlete`.trim()
+  }
+
+  const getSchoolTierLabel = (conferenceType: string): string => {
+    const tiers: Record<string, string> = {
+      'POWER_FOUR': 'Power 4 Program',
+      'GROUP_OF_FIVE': 'Group of 5 Program',
+      'MID_MAJOR': 'Mid-Major Program',
+      'FCS': 'FCS Program',
+    }
+    return tiers[conferenceType] || 'D1 Program'
+  }
+
+  const getAnonymizedId = (id: string): string => {
+    // Extract just the numeric part for display
+    const num = id.split('-').pop() || '0000'
+    return `#${num}`
+  }
+
   const clearFilters = () => {
     setSelectedSchool('')
     setSelectedSport('')
@@ -153,12 +175,12 @@ export default function AthleteBrowser() {
 
   const hasActiveFilters = selectedSchool || selectedSport || selectedPerformance || selectedClassYear || showTransfersOnly || showAgentsOnly
 
-  // Filter athletes by search query (client-side)
+  // Filter athletes by search query (client-side) - search by sport and conference type
   const displayedAthletes = searchQuery
     ? athletes.filter(a =>
-        `${a.firstName} ${a.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.school.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.sport.toLowerCase().includes(searchQuery.toLowerCase())
+        a.sport.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.conferenceType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getSchoolTierLabel(a.conferenceType).toLowerCase().includes(searchQuery.toLowerCase())
       )
     : athletes
 
@@ -208,7 +230,7 @@ export default function AthleteBrowser() {
             </svg>
             <input
               type="text"
-              placeholder="Search athletes, schools, sports..."
+              placeholder="Search by sport, program tier..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50"
@@ -355,9 +377,9 @@ export default function AthleteBrowser() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-white truncate group-hover:text-emerald-400 transition-colors">
-                      {athlete.firstName} {athlete.lastName}
+                      {getAnonymizedTitle(athlete)} {getAnonymizedId(athlete.id)}
                     </h3>
-                    <p className="text-sm text-white/50 truncate">{athlete.schoolShortName} - {athlete.sport}</p>
+                    <p className="text-sm text-white/50 truncate">{getSchoolTierLabel(athlete.conferenceType)}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-xs font-medium border ${getPerformanceColor(athlete.performanceTier)}`}>
                     {getPerformanceLabel(athlete.performanceTier)}
@@ -470,10 +492,10 @@ export default function AthleteBrowser() {
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-white">
-                    {selectedAthlete.firstName} {selectedAthlete.lastName}
+                    {getAnonymizedTitle(selectedAthlete)} {getAnonymizedId(selectedAthlete.id)}
                   </h2>
                   <p className="text-white/50">
-                    {selectedAthlete.school} - {selectedAthlete.sport}
+                    {getSchoolTierLabel(selectedAthlete.conferenceType)} • {selectedAthlete.sport}
                   </p>
                 </div>
                 <button
@@ -536,8 +558,8 @@ export default function AthleteBrowser() {
                   </div>
                 </div>
                 <div className="bg-white/[0.03] rounded-xl p-4">
-                  <p className="text-white/40 text-xs mb-1">Conference</p>
-                  <p className="text-lg font-medium text-white truncate">{selectedAthlete.conference}</p>
+                  <p className="text-white/40 text-xs mb-1">Program Tier</p>
+                  <p className="text-lg font-medium text-white truncate">{getSchoolTierLabel(selectedAthlete.conferenceType)}</p>
                 </div>
               </div>
 
@@ -560,7 +582,7 @@ export default function AthleteBrowser() {
                 <h3 className="text-sm font-medium text-white/40 mb-3">Value Multipliers</h3>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="bg-black/30 rounded-lg p-3 text-center">
-                    <p className="text-xs text-white/40">School</p>
+                    <p className="text-xs text-white/40">Program</p>
                     <p className="text-lg font-bold text-white">{selectedAthlete.nilMultipliers.school.toFixed(2)}x</p>
                   </div>
                   <div className="bg-black/30 rounded-lg p-3 text-center">
@@ -598,7 +620,7 @@ export default function AthleteBrowser() {
             {/* Modal Footer */}
             <div className="p-6 border-t border-white/10 bg-white/[0.02]">
               <p className="text-xs text-white/30 text-center">
-                ID: {selectedAthlete.id} | Generated synthetic data for prototype demonstration
+                Anonymized market data • Based on California D1 athlete profiles
               </p>
             </div>
           </div>

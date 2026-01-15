@@ -5,6 +5,29 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
+interface RedFlag {
+  name: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  excerpt: string
+  explanation: string
+  recommendation: string
+}
+
+interface KeyTerms {
+  compensation: string | null
+  duration: string | null
+  exclusivity: string | null
+  terminationRights: string | null
+  usageRights: string | null
+}
+
+interface SuggestedRedline {
+  original: string
+  revised: string
+  explanation: string
+  priority: 'must_change' | 'should_change' | 'consider'
+}
+
 interface ScanHistoryItem {
   id: string
   fileName: string | null
@@ -13,6 +36,9 @@ interface ScanHistoryItem {
   summary: string
   overallRisk: string
   redFlagsCount: number
+  redFlags: RedFlag[] | null
+  keyTerms: KeyTerms | null
+  suggestedRedlines: SuggestedRedline[] | null
   createdAt: string
 }
 
@@ -47,6 +73,34 @@ export default function ScansPage() {
       case 'high': return 'text-orange-400 bg-orange-400/10 border-orange-400/20'
       case 'critical': return 'text-red-400 bg-red-400/10 border-red-400/20'
       default: return 'text-white/50 bg-white/5 border-white/10'
+    }
+  }
+
+  function getSeverityColor(severity: string) {
+    switch (severity) {
+      case 'critical': return 'text-red-400 bg-red-500/10 border-red-500/20'
+      case 'high': return 'text-orange-400 bg-orange-500/10 border-orange-500/20'
+      case 'medium': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20'
+      case 'low': return 'text-blue-400 bg-blue-500/10 border-blue-500/20'
+      default: return 'text-white/50 bg-white/5 border-white/10'
+    }
+  }
+
+  function getPriorityColor(priority: string) {
+    switch (priority) {
+      case 'must_change': return 'text-red-400 bg-red-500/10'
+      case 'should_change': return 'text-yellow-400 bg-yellow-500/10'
+      case 'consider': return 'text-blue-400 bg-blue-500/10'
+      default: return 'text-white/50 bg-white/5'
+    }
+  }
+
+  function getPriorityLabel(priority: string) {
+    switch (priority) {
+      case 'must_change': return 'Must Change'
+      case 'should_change': return 'Should Change'
+      case 'consider': return 'Consider'
+      default: return priority
     }
   }
 
@@ -180,9 +234,130 @@ export default function ScansPage() {
                 </button>
 
                 {expandedScan === scan.id && (
-                  <div className="px-6 pb-6 border-t border-white/10 pt-4">
-                    <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-2">Summary</h4>
-                    <p className="text-white/70 leading-relaxed">{scan.summary}</p>
+                  <div className="px-6 pb-6 border-t border-white/10 pt-6 space-y-6">
+                    {/* Summary */}
+                    <div>
+                      <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">Summary</h4>
+                      <p className="text-white/70 leading-relaxed">{scan.summary}</p>
+                    </div>
+
+                    {/* Key Terms */}
+                    {scan.keyTerms && (
+                      <div>
+                        <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">Key Terms</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {scan.keyTerms.compensation && (
+                            <div className="bg-white/[0.03] rounded-xl p-4">
+                              <p className="text-xs text-white/40 mb-1">Compensation</p>
+                              <p className="text-white font-medium">{scan.keyTerms.compensation}</p>
+                            </div>
+                          )}
+                          {scan.keyTerms.duration && (
+                            <div className="bg-white/[0.03] rounded-xl p-4">
+                              <p className="text-xs text-white/40 mb-1">Duration</p>
+                              <p className="text-white font-medium">{scan.keyTerms.duration}</p>
+                            </div>
+                          )}
+                          {scan.keyTerms.exclusivity && (
+                            <div className="bg-white/[0.03] rounded-xl p-4">
+                              <p className="text-xs text-white/40 mb-1">Exclusivity</p>
+                              <p className="text-white font-medium">{scan.keyTerms.exclusivity}</p>
+                            </div>
+                          )}
+                          {scan.keyTerms.terminationRights && (
+                            <div className="bg-white/[0.03] rounded-xl p-4">
+                              <p className="text-xs text-white/40 mb-1">Termination Rights</p>
+                              <p className="text-white font-medium">{scan.keyTerms.terminationRights}</p>
+                            </div>
+                          )}
+                          {scan.keyTerms.usageRights && (
+                            <div className="bg-white/[0.03] rounded-xl p-4 md:col-span-2">
+                              <p className="text-xs text-white/40 mb-1">Usage Rights</p>
+                              <p className="text-white font-medium">{scan.keyTerms.usageRights}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Red Flags */}
+                    {scan.redFlags && scan.redFlags.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">
+                          Red Flags ({scan.redFlags.length})
+                        </h4>
+                        <div className="space-y-3">
+                          {scan.redFlags.map((flag, index) => (
+                            <div
+                              key={index}
+                              className={`rounded-xl p-4 border ${getSeverityColor(flag.severity)}`}
+                            >
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <h5 className="font-medium">{flag.name}</h5>
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${getSeverityColor(flag.severity)}`}>
+                                  {flag.severity.charAt(0).toUpperCase() + flag.severity.slice(1)}
+                                </span>
+                              </div>
+                              {flag.excerpt && (
+                                <div className="bg-black/20 rounded-lg p-3 mb-3">
+                                  <p className="text-sm text-white/60 italic">&quot;{flag.excerpt}&quot;</p>
+                                </div>
+                              )}
+                              <p className="text-sm text-white/70 mb-2">{flag.explanation}</p>
+                              <div className="flex items-start gap-2">
+                                <span className="text-emerald-400 text-xs font-medium mt-0.5">Recommendation:</span>
+                                <p className="text-sm text-emerald-400/80">{flag.recommendation}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Suggested Redlines */}
+                    {scan.suggestedRedlines && scan.suggestedRedlines.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">
+                          Suggested Changes ({scan.suggestedRedlines.length})
+                        </h4>
+                        <div className="space-y-3">
+                          {scan.suggestedRedlines.map((redline, index) => (
+                            <div
+                              key={index}
+                              className="bg-white/[0.03] rounded-xl p-4 border border-white/10"
+                            >
+                              <div className="flex items-center gap-2 mb-3">
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(redline.priority)}`}>
+                                  {getPriorityLabel(redline.priority)}
+                                </span>
+                              </div>
+                              <div className="space-y-2 mb-3">
+                                <div className="bg-red-500/10 rounded-lg p-3 border-l-2 border-red-500">
+                                  <p className="text-xs text-red-400/60 mb-1">Original</p>
+                                  <p className="text-sm text-white/70 line-through">{redline.original}</p>
+                                </div>
+                                <div className="bg-emerald-500/10 rounded-lg p-3 border-l-2 border-emerald-500">
+                                  <p className="text-xs text-emerald-400/60 mb-1">Suggested</p>
+                                  <p className="text-sm text-white">{redline.revised}</p>
+                                </div>
+                              </div>
+                              <p className="text-sm text-white/50">{redline.explanation}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Re-scan CTA */}
+                    <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+                      <p className="text-xs text-white/30">Scan ID: {scan.id}</p>
+                      <Link
+                        href="/"
+                        className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                      >
+                        Scan another contract →
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>
