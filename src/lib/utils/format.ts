@@ -1,6 +1,22 @@
-export function formatCurrency(amount: number | string | null | undefined): string {
+// Prisma Decimal type has toNumber() method
+interface DecimalLike {
+  toNumber(): number
+}
+
+function isDecimalLike(value: unknown): value is DecimalLike {
+  return typeof value === 'object' && value !== null && 'toNumber' in value
+}
+
+export function formatCurrency(amount: number | string | DecimalLike | null | undefined): string {
   if (amount === null || amount === undefined) return '$0.00'
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount
+  let num: number
+  if (typeof amount === 'string') {
+    num = parseFloat(amount)
+  } else if (isDecimalLike(amount)) {
+    num = amount.toNumber()
+  } else {
+    num = amount
+  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
