@@ -192,7 +192,7 @@ IMPORTANT FOR REDLINES:
 - Include redlines for missing clauses (e.g., payment terms, termination rights)
 - Make revised text fair to both parties, not one-sided
 
-Focus on these critical issues:
+UNIVERSAL RED FLAGS (check in ALL contracts):
 - Perpetual or unlimited usage rights
 - Overly broad exclusivity (>6 months or entire categories)
 - One-sided termination (brand can exit, athlete cannot)
@@ -205,6 +205,90 @@ ${athleteContext ? `- Any conflicts with ${athleteContext.shortName}'s specific 
 ${athleteContext ? `- ${athleteContext.conference} conference-specific issues` : ''}
 ${athleteContext?.isInternationalStudent ? '- International student visa/work authorization concerns' : ''}
 
+AGREEMENT-TYPE-SPECIFIC RED FLAGS (identify the agreement type and apply relevant checks):
+
+AGENT REPRESENTATION:
+- Commission rates above 15-20% (standard is 10-15% for NIL)
+- Exclusive representation without performance guarantees
+- Long contract terms (>2 years) with no exit clause
+- Agent claiming percentage of deals they didn't source
+- Conflicts of interest (agent representing competing athletes)
+
+SOCIAL MEDIA CONTENT:
+- Unlimited revisions or content requests
+- Rights to repurpose content without additional compensation
+- Requiring specific posting times that conflict with athletics
+- FTC disclosure requirements not addressed
+- Content approval timelines that are too short (<24 hours)
+
+APPEARANCE AGREEMENTS:
+- Vague time commitments ("as needed" or "reasonable availability")
+- No travel/expense reimbursement terms
+- Appearance during competition season without schedule flexibility
+- No cancellation policy for athletic conflicts
+
+APPAREL/BRAND ENDORSEMENTS:
+- Conflicts with team/school apparel sponsors
+- Requiring wear during competition (likely NCAA violation)
+- Category exclusivity that's too broad (all "athletic wear" vs specific)
+- Image usage extending beyond contract term
+
+LICENSING AGREEMENTS:
+- Sublicensing rights without athlete approval
+- No audit rights for royalty calculations
+- Minimum guarantees that are too low
+- Territory too broad (worldwide when local would suffice)
+
+MERCHANDISE/AUTOGRAPHS:
+- No limit on signing quantities
+- Per-item rates below market ($20+ for autographs is standard)
+- Exclusivity on ALL memorabilia vs specific items
+- No quality control over merchandise bearing athlete's likeness
+
+MANAGEMENT CONTRACTS:
+- Sunset clauses that extend beyond active representation
+- Manager taking percentage of non-NIL income (academic scholarships, etc.)
+- No clear scope of services
+- Non-compete clauses preventing athlete from hiring specialists
+
+REVENUE SHARE/NIL COLLECTIVES:
+- Requiring specific social media posts or appearances for "donations"
+- Tying payments to athletic performance (potential NCAA issue)
+- Unclear payment schedules or conditions
+- Collective controlling athlete's other NIL opportunities
+
+MEDIA/PODCAST APPEARANCES:
+- Granting rights to ALL future appearances
+- No editorial control or approval rights
+- Compensation only in "exposure" without monetary value
+- Waiving rights to object to editing/context
+
+STREAMING/CONTENT CREATION:
+- Platform exclusivity that prevents personal content
+- Revenue share below industry standard (50%+ should go to creator)
+- Owning content created on personal time
+- Non-compete for other streaming platforms
+
+ARTIFICIAL INTELLIGENCE/DIGITAL LIKENESS:
+- CRITICAL: AI training rights on voice/likeness without clear limits
+- Synthetic media creation rights
+- Deepfake or digital avatar rights extending perpetually
+- No approval rights over AI-generated content
+- Unclear ownership of AI-generated derivative works
+
+DATA AND ANALYTICS:
+- Biometric data collection without clear purpose limits
+- Selling/sharing data with third parties
+- No data deletion rights after contract ends
+- Health/performance data that could affect draft stock or future contracts
+
+VIDEO GAMES:
+- Group licensing that undervalues individual contribution
+- Perpetual likeness rights for future game editions
+- No additional compensation for prominent featuring
+- Rights extending to future technologies not yet invented
+
+First, identify what type of agreement this is, then apply both universal and type-specific checks.
 Only flag actual issues found in the contract. If the contract is reasonable, the redFlags array can be empty.`
 
   try {
