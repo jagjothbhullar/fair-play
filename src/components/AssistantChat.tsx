@@ -23,13 +23,20 @@ const QUICK_PROMPTS = [
   "What should I negotiate first?",
 ]
 
+const MAX_MESSAGES = 5
+
 export default function AssistantChat({ scanContext }: AssistantChatProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Count user messages (each user message = 1 question)
+  const userMessageCount = messages.filter(m => m.role === 'user').length
+  const remainingMessages = MAX_MESSAGES - userMessageCount
+  const isLimitReached = remainingMessages <= 0
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -37,12 +44,15 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
     }
   }, [isOpen])
 
+  // Scroll to top when chat opens (so user sees beginning of conversation)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (isOpen && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = 0
+    }
+  }, [isOpen])
 
   async function sendMessage(text: string) {
-    if (!text.trim() || isLoading) return
+    if (!text.trim() || isLoading || isLimitReached) return
 
     const userMessage: Message = { role: 'user', content: text.trim() }
     setMessages(prev => [...prev, userMessage])
@@ -131,7 +141,7 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px] max-h-[400px]">
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px] max-h-[400px]">
             {messages.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-white/40 text-sm mb-4">
@@ -178,26 +188,37 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
                     </div>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
+                {isLimitReached && (
+                  <div className="text-center py-4">
+                    <p className="text-white/40 text-sm">
+                      You&apos;ve used all 5 follow-up questions for this session.
+                    </p>
+                  </div>
+                )}
               </>
             )}
           </div>
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="p-4 border-t border-white/10 bg-white/[0.02]">
+            {!isLimitReached && messages.length > 0 && (
+              <div className="text-xs text-white/30 mb-2">
+                {remainingMessages} question{remainingMessages !== 1 ? 's' : ''} remaining
+              </div>
+            )}
             <div className="flex gap-2">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a quick question..."
-                disabled={isLoading}
+                placeholder={isLimitReached ? "Message limit reached" : "Ask a quick question..."}
+                disabled={isLoading || isLimitReached}
                 className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:border-emerald-400/50 disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || isLimitReached}
                 className="px-4 py-3 bg-emerald-500 text-black rounded-xl font-medium hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
