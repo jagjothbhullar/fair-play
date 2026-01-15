@@ -169,8 +169,8 @@ export default function Home() {
       <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
 
       {/* Gradient orbs */}
-      <div className="fixed top-0 left-1/4 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[128px] pointer-events-none" />
-      <div className="fixed bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[128px] pointer-events-none" />
+      <div className="fixed top-0 left-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/4 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[128px] pointer-events-none" />
 
       {/* Auth Modal */}
       <AuthModal
@@ -186,7 +186,7 @@ export default function Home() {
       <header className="relative z-10 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
               <span className="text-black font-bold text-lg">FP</span>
             </div>
             <span className="text-xl font-semibold tracking-tight">Fair Play</span>
@@ -244,7 +244,7 @@ export default function Home() {
 
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
                   Protect your
-                  <span className="block bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-emerald-300 via-emerald-400 to-emerald-300 bg-clip-text text-transparent">
                     future.
                   </span>
                 </h1>
@@ -256,19 +256,19 @@ export default function Home() {
 
                 <div className="flex flex-wrap gap-8 text-sm text-white/40">
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                     Bank-level security
                   </div>
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                     Results in 30 seconds
                   </div>
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {user ? 'Unlimited scans' : 'First scan free'}
@@ -278,7 +278,7 @@ export default function Home() {
 
               {/* Right: Scanner Card */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-amber-500/20 to-transparent rounded-3xl blur-2xl" />
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent rounded-3xl blur-2xl" />
                 <div className="relative bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8">
                   {/* Email Input - only show for non-authenticated users */}
                   {!user && (
@@ -291,7 +291,7 @@ export default function Home() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="name@email.com"
-                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-400/50 focus:bg-white/[0.07] transition-all"
+                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50 focus:bg-white/[0.07] transition-all"
                       />
                     </div>
                   )}
@@ -323,9 +323,9 @@ export default function Home() {
                   {/* File Upload or Text Input */}
                   {inputMode === 'file' ? (
                     <label className="block cursor-pointer group">
-                      <div className="border-2 border-dashed border-white/10 rounded-2xl p-10 text-center hover:border-amber-400/30 hover:bg-white/[0.02] transition-all">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/20 flex items-center justify-center">
-                          <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="border-2 border-dashed border-white/10 rounded-2xl p-10 text-center hover:border-emerald-400/30 hover:bg-white/[0.02] transition-all">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 flex items-center justify-center">
+                          <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                         </div>
@@ -347,7 +347,7 @@ export default function Home() {
                       onChange={(e) => setText(e.target.value)}
                       rows={6}
                       placeholder="Paste your contract text here..."
-                      className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-400/50 resize-none"
+                      className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50 resize-none"
                     />
                   )}
 
@@ -362,7 +362,7 @@ export default function Home() {
                   <button
                     onClick={handleScan}
                     disabled={(!user && !email) || (inputMode === 'file' ? !file : !text.trim())}
-                    className="mt-6 w-full py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-xl font-semibold text-lg hover:from-amber-300 hover:to-amber-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all disabled:hover:from-amber-400 disabled:hover:to-amber-500"
+                    className="mt-6 w-full py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-xl font-semibold text-lg hover:from-emerald-300 hover:to-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all disabled:hover:from-emerald-400 disabled:hover:to-emerald-500"
                   >
                     Analyze Contract
                   </button>
@@ -389,8 +389,8 @@ export default function Home() {
         {/* Limit Reached State */}
         {pageState === 'limit_reached' && (
           <div className="max-w-lg mx-auto px-6 py-24 text-center">
-            <div className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/20 flex items-center justify-center">
-              <svg className="w-10 h-10 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 flex items-center justify-center">
+              <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
@@ -405,7 +405,7 @@ export default function Home() {
             <div className="space-y-3">
               <Link
                 href="/signup"
-                className="block w-full py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-xl font-semibold hover:from-amber-300 hover:to-amber-400 transition-all"
+                className="block w-full py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-xl font-semibold hover:from-emerald-300 hover:to-emerald-400 transition-all"
               >
                 Create Free Account
               </Link>
@@ -427,7 +427,7 @@ export default function Home() {
                   'Compliance alerts',
                 ].map((feature) => (
                   <div key={feature} className="flex items-center gap-2 text-white/60 text-sm">
-                    <svg className="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     {feature}
@@ -563,7 +563,7 @@ export default function Home() {
                     setAuthModalMode('signup')
                     setAuthModalOpen(true)
                   }}
-                  className="inline-flex px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-full font-semibold hover:from-amber-300 hover:to-amber-400 transition-all"
+                  className="inline-flex px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-full font-semibold hover:from-emerald-300 hover:to-emerald-400 transition-all"
                 >
                   Create Free Account
                 </button>
@@ -580,7 +580,7 @@ export default function Home() {
                     setFile(null)
                     setText('')
                   }}
-                  className="inline-flex px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-full font-semibold hover:from-amber-300 hover:to-amber-400 transition-all"
+                  className="inline-flex px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-full font-semibold hover:from-emerald-300 hover:to-emerald-400 transition-all"
                 >
                   Scan Another Contract
                 </button>
@@ -639,7 +639,7 @@ function RedFlagCard({ flag }: { flag: RedFlag }) {
       )}
       <p className="text-sm text-white/60 mb-3">{flag.explanation}</p>
       <p className="text-sm">
-        <span className="text-amber-400">Recommendation:</span>{' '}
+        <span className="text-emerald-400">Recommendation:</span>{' '}
         <span className="text-white/60">{flag.recommendation}</span>
       </p>
     </div>
@@ -736,9 +736,9 @@ function LoadingState() {
       <div className="text-center">
         <div className="relative w-24 h-24 mx-auto mb-8">
           <div className="absolute inset-0 rounded-full border-4 border-white/10" />
-          <div className="absolute inset-0 rounded-full border-4 border-amber-400 border-t-transparent animate-spin" />
+          <div className="absolute inset-0 rounded-full border-4 border-emerald-400 border-t-transparent animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <svg className="w-10 h-10 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
@@ -757,8 +757,8 @@ function LoadingState() {
             Reading
           </span>
           <span className="w-8 h-px bg-white/20" />
-          <span className="text-amber-400 flex items-center gap-2 animate-pulse">
-            <span className="w-2 h-2 bg-amber-400 rounded-full" />
+          <span className="text-emerald-400 flex items-center gap-2 animate-pulse">
+            <span className="w-2 h-2 bg-emerald-400 rounded-full" />
             Analyzing
           </span>
           <span className="w-8 h-px bg-white/20" />

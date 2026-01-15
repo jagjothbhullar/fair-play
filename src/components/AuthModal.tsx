@@ -129,7 +129,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 's
           <>
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
                 <span className="text-black font-bold text-xl">FP</span>
               </div>
               <h2 className="text-2xl font-bold text-white">
@@ -159,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 's
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-400/50 focus:bg-white/[0.07] transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50 focus:bg-white/[0.07] transition-all"
                   placeholder="you@email.com"
                 />
               </div>
@@ -174,7 +174,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 's
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-400/50 focus:bg-white/[0.07] transition-all"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50 focus:bg-white/[0.07] transition-all"
                   placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
                 />
               </div>
@@ -182,7 +182,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 's
               <button
                 type="submit"
                 disabled={loading || !email || !password}
-                className="w-full py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-xl font-semibold hover:from-amber-300 hover:to-amber-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="w-full py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-xl font-semibold hover:from-emerald-300 hover:to-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 {loading
                   ? (mode === 'signup' ? 'Creating...' : 'Signing in...')
@@ -197,7 +197,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 's
                   Already have an account?{' '}
                   <button
                     onClick={() => setMode('signin')}
-                    className="text-amber-400 hover:text-amber-300 font-medium"
+                    className="text-emerald-400 hover:text-emerald-300 font-medium"
                   >
                     Sign in
                   </button>
@@ -207,7 +207,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 's
                   Don&apos;t have an account?{' '}
                   <button
                     onClick={() => setMode('signup')}
-                    className="text-amber-400 hover:text-amber-300 font-medium"
+                    className="text-emerald-400 hover:text-emerald-300 font-medium"
                   >
                     Create one
                   </button>

@@ -97,7 +97,7 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
           className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
             isOpen
               ? 'bg-white/10 border border-white/20 rotate-0'
-              : 'bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500'
+              : 'bg-gradient-to-br from-emerald-400 to-emerald-600 hover:from-emerald-300 hover:to-emerald-500'
           }`}
         >
           {isOpen ? (
@@ -118,7 +118,7 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
           {/* Header */}
           <div className="px-5 py-4 border-b border-white/10 bg-white/[0.02]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
                 <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
@@ -159,7 +159,7 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
                     <div
                       className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm ${
                         message.role === 'user'
-                          ? 'bg-amber-500 text-black rounded-br-md'
+                          ? 'bg-emerald-500 text-black rounded-br-md'
                           : 'bg-white/10 text-white/90 rounded-bl-md'
                       }`}
                     >
@@ -193,12 +193,12 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask a quick question..."
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:border-amber-400/50 disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:border-emerald-400/50 disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="px-4 py-3 bg-amber-500 text-black rounded-xl font-medium hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-3 bg-emerald-500 text-black rounded-xl font-medium hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
