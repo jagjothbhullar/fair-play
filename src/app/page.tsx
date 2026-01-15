@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -39,7 +39,7 @@ interface ScanResult {
 
 type PageState = 'scanner' | 'scanning' | 'results' | 'limit_reached'
 
-export default function Home() {
+function HomeContent() {
   const [pageState, setPageState] = useState<PageState>('scanner')
   const [email, setEmail] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -874,5 +874,17 @@ function LoadingState() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   )
 }
