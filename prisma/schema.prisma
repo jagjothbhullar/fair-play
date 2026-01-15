@@ -9,6 +9,33 @@ datasource db {
 }
 
 // ============================================================================
+// SCAN HISTORY (for logged-in users)
+// ============================================================================
+
+model ScanHistory {
+  id              String   @id @default(cuid())
+  supabaseUserId  String   // Links to Supabase auth user
+
+  // Scan metadata
+  fileName        String?  // Original file name if uploaded
+  inputType       String   @default("file") // "file" or "text"
+  pageCount       Int?
+
+  // Results
+  summary         String   @db.Text
+  overallRisk     String   // "low", "medium", "high", "critical"
+  redFlagsCount   Int      @default(0)
+  redFlags        Json?    // Array of red flag objects
+  keyTerms        Json?    // Key terms extracted
+  suggestedRedlines Json?  // Suggested changes
+
+  createdAt       DateTime @default(now())
+
+  @@index([supabaseUserId])
+  @@index([createdAt])
+}
+
+// ============================================================================
 // FREE USER TRACKING (for ungated contract scanner)
 // ============================================================================
 

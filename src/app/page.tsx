@@ -126,9 +126,10 @@ export default function Home() {
         formData.append('email', email)
       }
 
-      // For authenticated users, include auth flag
+      // For authenticated users, include auth flag and user ID
       if (user) {
         formData.append('authenticated', 'true')
+        formData.append('userId', user.id)
       }
 
       const response = await fetch('/api/scan', {
@@ -191,18 +192,29 @@ export default function Home() {
             </div>
             <span className="text-xl font-semibold tracking-tight">Fair Play</span>
           </Link>
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-6">
             {user ? (
               <>
-                <span className="px-4 py-2 text-sm text-white/50">
-                  {user.email}
-                </span>
-                <button
-                  onClick={handleSignOut}
-                  className="px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors"
-                >
-                  Sign Out
-                </button>
+                <Link href="/market" className="text-sm text-white/70 hover:text-white transition-colors">
+                  NIL Market
+                </Link>
+                <Link href="/water-cooler" className="text-sm text-white/70 hover:text-white transition-colors">
+                  Water Cooler
+                </Link>
+                <Link href="/scans" className="text-sm text-white/70 hover:text-white transition-colors">
+                  My Scans
+                </Link>
+                <div className="flex items-center gap-2 pl-4 border-l border-white/10">
+                  <span className="text-sm text-white/50">
+                    {user.email}
+                  </span>
+                  <button
+                    onClick={handleSignOut}
+                    className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </>
             ) : (
               <>

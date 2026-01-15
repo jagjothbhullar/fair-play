@@ -3,6 +3,7 @@ import { scanContract } from '@/lib/services/contract-scanner'
 import { sendScanResultsEmail } from '@/lib/services/email'
 import { checkRateLimit, rateLimiters } from '@/lib/rate-limit'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { prisma } from '@/lib/db'
 
 // Page limit for PDF files
 const MAX_PDF_PAGES = 25
@@ -156,6 +157,30 @@ export async function POST(request: NextRequest) {
 
     // Scan without athlete context (public/generic scan)
     const result = await scanContract(contractText, null)
+
+    // Save scan history for authenticated users
+    const userIdFromForm = formData.get('userId') as string | null
+    if (isAuthenticated && userIdFromForm) {
+      try {
+        await prisma.scanHistory.create({
+          data: {
+            supabaseUserId: userIdFromForm,
+            fileName: file?.name || null,
+            inputType: file ? 'file' : 'text',
+            pageCount: pageCount || null,
+            summary: result.summary,
+            overallRisk: result.overallRisk,
+            redFlagsCount: result.redFlags.length,
+            redFlags: result.redFlags,
+            keyTerms: result.keyTerms,
+            suggestedRedlines: result.suggestedRedlines || null,
+          },
+        })
+      } catch (err) {
+        console.error('Failed to save scan history:', err)
+        // Don't fail the request if saving history fails
+      }
+    }
 
     // Send email with results (non-blocking)
     if (email && email.includes('@')) {
