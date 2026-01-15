@@ -60,8 +60,8 @@ export default function SignupPage() {
 
       if (authError) throw authError
 
-      // Redirect to onboarding or dashboard
-      router.push('/deals')
+      // Redirect to dashboard
+      router.push('/dashboard')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

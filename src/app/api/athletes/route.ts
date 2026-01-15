@@ -79,9 +79,9 @@ export async function GET(request: NextRequest) {
   const paginatedAthletes = athletes.slice(offset, offset + limit)
 
   // Get unique values for filter dropdowns
-  const uniqueSchools = [...new Set(allAthletes.map(a => a.schoolShortName))].sort()
-  const uniqueSports = [...new Set(allAthletes.map(a => a.sport))].sort()
-  const uniqueConferences = [...new Set(allAthletes.map(a => a.conference))].sort()
+  const uniqueSchools = Array.from(new Set(allAthletes.map(a => a.schoolShortName))).sort()
+  const uniqueSports = Array.from(new Set(allAthletes.map(a => a.sport))).sort()
+  const uniqueConferences = Array.from(new Set(allAthletes.map(a => a.conference))).sort()
 
   return NextResponse.json({
     athletes: paginatedAthletes,

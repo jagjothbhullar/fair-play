@@ -546,8 +546,8 @@ export function getQuickStats() {
   const athletes = getCachedAthletes()
   return {
     total: athletes.length,
-    schools: new Set(athletes.map(a => a.schoolShortName)).size,
-    sports: new Set(athletes.map(a => a.sport)).size,
+    schools: Array.from(new Set(athletes.map(a => a.schoolShortName))).length,
+    sports: Array.from(new Set(athletes.map(a => a.sport))).length,
     totalNILValue: athletes.reduce((sum, a) => sum + a.estimatedNILValue.annual, 0),
     eliteAthletes: athletes.filter(a => a.performanceTier === 'elite').length,
     transfers: athletes.filter(a => a.isTransfer).length,
