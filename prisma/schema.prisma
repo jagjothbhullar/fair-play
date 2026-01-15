@@ -1,0 +1,363 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================================
+// CORE ENTITIES
+// ============================================================================
+
+model Athlete {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  firstName             String
+  lastName              String
+  schoolId              String
+  school                School    @relation(fields: [schoolId], references: [id])
+  sportId               String
+  sport                 Sport     @relation(fields: [sportId], references: [id])
+  jerseyNumber          String?
+  position              String?
+  classYear             ClassYear
+  eligibilityStatus     EligibilityStatus @default(ACTIVE)
+  hometownCity          String?
+  hometownState         String?
+  hometownCountry       String    @default("USA")
+  heightInches          Int?
+  weightLbs             Int?
+  isInternationalStudent Boolean  @default(false)
+  socialHandles         Json?     // { instagram?: string, twitter?: string, tiktok?: string }
+  profilePhotoUrl       String?
+  bio                   String?
+  openTo                String[]  // ["social_posts", "appearances", "autographs", "camps"]
+  supabaseUserId        String?   @unique
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  deals            Deal[]
+  complianceChecks ComplianceCheck[]
+
+  @@index([schoolId])
+  @@index([sportId])
+}
+
+model School {
+  id                   String   @id @default(cuid())
+  name                 String   // "Stanford University"
+  shortName            String   // "Stanford"
+  mascot               String   // "Cardinal"
+  conferenceId         String
+  conference           Conference @relation(fields: [conferenceId], references: [id])
+  state                String   // "CA"
+  compliancePlatform   String?  // "INFLCR", "Opendorse", "ARMS"
+  complianceEmail      String?
+  nilPolicyUrl         String?
+  requiresPreApproval  Boolean  @default(false)
+  disclosureDeadlineDays Int    @default(5)
+  prohibitedCategories String[] // ["alcohol", "tobacco", ...]
+  facilityUsageAllowed Boolean  @default(false)
+  marksUsageAllowed    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  athletes         Athlete[]
+  sports           SchoolSport[]
+  complianceRules  ComplianceRule[]
+
+  @@index([conferenceId])
+}
+
+model Sport {
+  id             String   @id @default(cuid())
+  name           String   // "Men's Basketball"
+  gender         Gender
+  category       String   // "basketball", "football", etc.
+  isRevenueSport Boolean  @default(false)
+
+  athletes Athlete[]
+  schools  SchoolSport[]
+
+  @@unique([name, gender])
+}
+
+model SchoolSport {
+  id        String @id @default(cuid())
+  schoolId  String
+  school    School @relation(fields: [schoolId], references: [id])
+  sportId   String
+  sport     Sport  @relation(fields: [sportId], references: [id])
+  rosterUrl String?
+
+  @@unique([schoolId, sportId])
+}
+
+model Conference {
+  id       String   @id @default(cuid())
+  name     String   @unique // "ACC", "Mountain West", "WCC"
+  division Division @default(D1)
+
+  schools School[]
+}
+
+// ============================================================================
+// DEAL MANAGEMENT
+// ============================================================================
+
+model Deal {
+  id                    String     @id @default(cuid())
+  athleteId             String
+  athlete               Athlete    @relation(fields: [athleteId], references: [id])
+  brandId               String?
+  brand                 Brand?     @relation(fields: [brandId], references: [id])
+  brandNameOverride     String?    // For non-registered brands
+  dealType              DealType
+  status                DealStatus @default(DRAFT)
+  title                 String
+  description           String?
+  compensationCash      Decimal?   @db.Decimal(10, 2)
+  compensationProducts  String?
+  compensationTotalValue Decimal   @db.Decimal(10, 2)
+  startDate             DateTime?
+  endDate               DateTime?
+  isExclusive           Boolean    @default(false)
+  exclusivityCategory   String?
+  exclusivityDurationMonths Int?
+  contractFileUrl       String?
+  contractScannedAt     DateTime?
+  contractRedFlags      Json?      // Array of detected red flags
+  contractSummary       String?    // AI-generated plain English summary
+  complianceStatus      ComplianceStatus @default(NOT_SUBMITTED)
+  disclosedToSchoolAt   DateTime?
+  disclosedToNcaaAt     DateTime?
+  requiresNcaaDisclosure Boolean   @default(false)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  deliverables     DealDeliverable[]
+  payments         DealPayment[]
+  complianceChecks ComplianceCheck[]
+
+  @@index([athleteId])
+  @@index([status])
+}
+
+model DealDeliverable {
+  id          String             @id @default(cuid())
+  dealId      String
+  deal        Deal               @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  description String
+  dueDate     DateTime?
+  status      DeliverableStatus  @default(PENDING)
+  completedAt DateTime?
+  proofUrl    String?
+
+  @@index([dealId])
+}
+
+model DealPayment {
+  id           String        @id @default(cuid())
+  dealId       String
+  deal         Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  amount       Decimal       @db.Decimal(10, 2)
+  paymentType  PaymentType   @default(CASH)
+  expectedDate DateTime?
+  receivedDate DateTime?
+  status       PaymentStatus @default(PENDING)
+
+  @@index([dealId])
+}
+
+model Brand {
+  id           String   @id @default(cuid())
+  name         String
+  category     String?  // "food", "apparel", "automotive", etc.
+  websiteUrl   String?
+  logoUrl      String?
+  contactEmail String?
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  deals Deal[]
+}
+
+// ============================================================================
+// COMPLIANCE ENGINE
+// ============================================================================
+
+model ComplianceCheck {
+  id        String              @id @default(cuid())
+  dealId    String
+  deal      Deal                @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  athleteId String
+  athlete   Athlete             @relation(fields: [athleteId], references: [id])
+  checkType ComplianceCheckType
+  ruleId    String
+  rule      ComplianceRule      @relation(fields: [ruleId], references: [id])
+  status    ComplianceCheckStatus
+  message   String?
+  checkedAt DateTime            @default(now())
+
+  @@index([dealId])
+  @@index([athleteId])
+}
+
+model ComplianceRule {
+  id          String           @id @default(cuid())
+  scope       ComplianceScope
+  schoolId    String?          // If scope is SCHOOL
+  school      School?          @relation(fields: [schoolId], references: [id])
+  stateCode   String?          // If scope is STATE (e.g., "CA")
+  ruleCode    String           @unique // "NCAA-NIL-600", "CA-SB26-DISCLOSURE"
+  title       String
+  description String
+  checkLogic  Json             // Machine-readable rule logic
+  severity    RuleSeverity
+  effectiveDate DateTime       @default(now())
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  complianceChecks ComplianceCheck[]
+
+  @@index([scope])
+  @@index([schoolId])
+}
+
+model ContractTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  dealType        DealType
+  description     String?
+  templateContent String   @db.Text
+  version         Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ContractRedFlagPattern {
+  id            String       @id @default(cuid())
+  name          String       // "Perpetual Rights"
+  patternType   PatternType
+  patternValue  String       // Regex or keywords
+  severity      RuleSeverity
+  explanation   String       @db.Text
+  recommendation String      @db.Text
+  createdAt     DateTime     @default(now())
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum ClassYear {
+  FR
+  SO
+  JR
+  SR
+  GR
+  RS_FR
+  RS_SO
+  RS_JR
+  RS_SR
+}
+
+enum EligibilityStatus {
+  ACTIVE
+  EXHAUSTED
+  TRANSFERRED
+  MEDICAL_REDSHIRT
+}
+
+enum Gender {
+  M
+  F
+}
+
+enum Division {
+  D1
+  D2
+  D3
+}
+
+enum DealType {
+  SOCIAL_POST
+  APPEARANCE
+  AUTOGRAPH
+  CAMP
+  LICENSING
+  MERCHANDISE
+  OTHER
+}
+
+enum DealStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  COMPLETED
+  TERMINATED
+  EXPIRED
+}
+
+enum ComplianceStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  FLAGGED
+  REJECTED
+}
+
+enum DeliverableStatus {
+  PENDING
+  COMPLETED
+  OVERDUE
+}
+
+enum PaymentType {
+  CASH
+  PRODUCT
+  SERVICE
+}
+
+enum PaymentStatus {
+  PENDING
+  RECEIVED
+  OVERDUE
+}
+
+enum ComplianceCheckType {
+  SCHOOL_POLICY
+  STATE_LAW
+  NCAA_RULE
+  CONFERENCE_RULE
+}
+
+enum ComplianceCheckStatus {
+  PASS
+  FAIL
+  WARNING
+  NEEDS_REVIEW
+}
+
+enum ComplianceScope {
+  NCAA
+  STATE
+  SCHOOL
+  CONFERENCE
+}
+
+enum RuleSeverity {
+  ERROR
+  WARNING
+  INFO
+}
+
+enum PatternType {
+  KEYWORD
+  REGEX
+  SEMANTIC
+}
