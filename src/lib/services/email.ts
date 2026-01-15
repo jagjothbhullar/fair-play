@@ -42,7 +42,7 @@ export async function sendScanResultsEmail(data: ScanResultEmail): Promise<boole
 
   try {
     await resend.emails.send({
-      from: 'Fair Play <results@fairplay.app>',
+      from: 'Fair Play <onboarding@resend.dev>',
       to: data.email,
       subject: `Your Contract Scan Results - ${data.overallRisk.toUpperCase()} Risk`,
       html: `
