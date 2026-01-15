@@ -288,7 +288,205 @@ VIDEO GAMES:
 - No additional compensation for prominent featuring
 - Rights extending to future technologies not yet invented
 
-First, identify what type of agreement this is, then apply both universal and type-specific checks.
+=== CREATOR/INFLUENCER CONTRACTS ===
+
+BRAND SPONSORSHIP/INFLUENCER:
+- Whitelisting rights (brand running ads from your account) without extra pay
+- Usage rights extending beyond campaign period
+- Exclusivity across too many competitor categories
+- No kill fee if brand cancels after content creation
+- Requiring exclusivity during "consideration" periods before signing
+
+UGC (USER GENERATED CONTENT):
+- Rates below market ($150-500+ per video is standard)
+- Unlimited revisions or re-shoots
+- Rights to use content perpetually for one-time fee
+- No credit/attribution requirements
+- Broad usage rights (paid ads, TV, OOH) for organic-only pricing
+
+AFFILIATE MARKETING:
+- Cookie duration too short (<30 days)
+- Commission rates below industry standard
+- Clawbacks on returns beyond reasonable period (>60 days)
+- Exclusive affiliate arrangements limiting other partnerships
+- No transparency on conversion tracking
+
+PLATFORM PARTNERSHIPS (YouTube, TikTok, etc.):
+- Revenue share below platform standard (YouTube 55%, TikTok varies)
+- Content ownership transferring to platform
+- Exclusivity without minimum guarantees
+- Penalties for missing upload schedules
+- Platform can terminate without notice or cause
+
+=== STREAMER/GAMING CONTRACTS ===
+
+STREAMING PLATFORM EXCLUSIVITY (Twitch, YouTube, Kick):
+- Exclusivity without guaranteed minimum payment
+- Non-compete extending beyond contract term
+- Platform owns VODs/clips perpetually
+- Restrictions on other income sources (YouTube, sponsorships)
+- No out-clause if platform changes terms
+
+ESPORTS/TEAM CONTRACTS:
+- Salary below market for skill level
+- Team taking cut of personal streaming revenue
+- Org owns your content/brand you built
+- Transfer/buyout clauses that trap you
+- Prize money splits favoring org (should be 80%+ to player)
+
+TOURNAMENT/COMPETITION:
+- Waiving all media rights for participation
+- No compensation for broadcast appearances
+- Liability waivers that are too broad
+- Prize money payment timelines too long (>30 days)
+
+=== MUSIC INDUSTRY CONTRACTS ===
+
+RECORD LABEL (traditional & 360 deals):
+- CRITICAL: 360 deals taking cut of touring, merch, sponsorships
+- Ownership of masters (try to retain or get reversion)
+- Recoupment terms that keep you in debt
+- Album commitment requirements (multiple albums locked in)
+- Controlled composition clauses reducing your publishing
+- Option periods that extend control without new advances
+
+MUSIC DISTRIBUTION:
+- Taking ownership vs just distribution rights
+- Exclusive distribution when non-exclusive available
+- Hidden fees eating into royalties
+- Long exclusive terms (>1-2 years is risky)
+- No audit rights on streaming calculations
+
+MUSIC PUBLISHING:
+- Giving up 100% publishing (50/50 co-pub is better)
+- Admin deals taking more than 15-20%
+- Sync approval rights - you should have them
+- Reversion clauses - when do you get rights back?
+- Advances that are actually loans with bad terms
+
+PRODUCER/BEAT LICENSE:
+- Exclusive vs non-exclusive terms must be clear
+- Streaming caps on non-exclusive licenses
+- Producer royalty points (2-4% is standard)
+- Who owns the master if it's a collaboration
+- Sample clearance responsibility
+
+SYNC LICENSING (TV, Film, Ads):
+- Buyout vs ongoing royalties
+- Territory and term limitations
+- Most Favored Nations (MFN) clauses
+- Options for extended use at low rates
+- Credit and attribution requirements
+
+BOOKING AGENT:
+- Commission above 10-15% for live bookings
+- Exclusive booking rights limiting direct deals
+- Term length over 1-2 years
+- Sunset provisions after contract ends
+- Geographic exclusivity that's too broad
+
+COLLABORATION/FEATURES:
+- Credit and billing order
+- Revenue split clarity
+- Who controls distribution
+- Sample clearance responsibilities
+- Approval rights on final mix
+
+=== GENERAL CREATOR CONTRACTS ===
+
+WORK FOR HIRE:
+- No backend/royalties on successful content
+- Giving up all rights including credit
+- Rates below market for full buyout
+- Scope creep without additional compensation
+- Non-compete preventing similar work
+
+GHOSTWRITING/CONTENT CREATION:
+- No portfolio rights (can't show work as yours)
+- Payment contingent on client approval (should be on delivery)
+- Unlimited revisions
+- Rush fees not addressed
+- Kill fees if project cancelled
+
+NDA/CONFIDENTIALITY:
+- Term too long (>2-3 years for most situations)
+- Definition of confidential too broad
+- Penalties disproportionate to potential harm
+- Restricting you from discussing publicly available info
+- No carve-outs for legal requirements
+
+NON-COMPETE:
+- Duration too long (>6-12 months)
+- Geographic scope too broad
+- Industry definition too wide
+- No compensation during non-compete period
+- Triggered even if they terminate you
+
+COLLABORATION/JOINT VENTURE:
+- Ownership of IP created together
+- Revenue split and accounting transparency
+- Exit provisions if partnership sours
+- Decision-making authority
+- Who controls the brand/accounts
+
+PLATFORM CREATOR FUNDS:
+- Opaque calculation methods
+- Unilateral right to change payment terms
+- Content requirements to qualify
+- Data usage rights buried in terms
+- Exclusivity implied but not compensated
+
+=== ANCILLARY/SUPPLEMENTAL DOCUMENTS ===
+
+AMENDMENTS/ADDENDUMS:
+- Changes that materially worsen original terms
+- Not clearly referencing which sections are modified
+- New obligations without new consideration/payment
+- Extending term or exclusivity without consent
+- Waiving rights you had in original agreement
+
+SIDE LETTERS:
+- Contradicting main agreement (which controls?)
+- Informal language that creates ambiguity
+- Promises not legally binding
+- Confidentiality preventing you from discussing terms
+- Expiration that doesn't match main agreement
+
+EXHIBITS/SCHEDULES:
+- Scope of work broader than discussed
+- Deliverables list that's open-ended
+- Rate cards that can be changed unilaterally
+- Territory or platform lists that are too broad
+- Vague descriptions that allow scope creep
+
+RELEASES/WAIVERS:
+- Waiving rights you don't understand
+- Releasing future claims (not just past)
+- Waiving right to join class actions
+- No consideration for signing release
+- Perpetual releases for one-time payment
+
+ASSIGNMENT/TRANSFER NOTICES:
+- Your contract being assigned without consent rights
+- New party has worse reputation/financials
+- Terms changing upon assignment
+- No right to terminate if assigned
+
+TERMINATION/SETTLEMENT AGREEMENTS:
+- Giving up more than necessary to end relationship
+- Non-disparagement that's one-sided
+- Releasing future claims unrelated to dispute
+- Confidentiality about settlement terms you need to disclose
+- Payment timelines that are too long
+
+LETTERS OF INTENT (LOI) / TERM SHEETS:
+- Binding obligations in "non-binding" document
+- Exclusivity periods without compensation
+- Break-up fees if deal doesn't close
+- Confidentiality surviving failed deal
+- Missing key terms that will be decided later
+
+First, identify what type of document this is (main agreement vs ancillary), then apply relevant checks.
 Only flag actual issues found in the contract. If the contract is reasonable, the redFlags array can be empty.`
 
   try {
