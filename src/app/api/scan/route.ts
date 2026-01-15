@@ -1,32 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { scanContract, extractTextFromPdf } from '@/lib/services/contract-scanner'
+import { scanContract } from '@/lib/services/contract-scanner'
 import { sendScanResultsEmail } from '@/lib/services/email'
 import { checkRateLimit, rateLimiters } from '@/lib/rate-limit'
+import { createClient } from '@supabase/supabase-js'
 
-// Public endpoint for free contract scanning (no auth required)
-// Rate limited: 5 requests per hour per IP
+// Page limit for PDF files
+const MAX_PDF_PAGES = 25
+
+// Create Supabase client for server-side auth verification
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+// Track authenticated user scans for throttling
+const userScanCounts = new Map<string, { count: number; lastReset: number }>()
+
+function getUserScanCount(userId: string): number {
+  const now = Date.now()
+  const hourInMs = 60 * 60 * 1000
+  const userScans = userScanCounts.get(userId)
+
+  if (!userScans || now - userScans.lastReset > hourInMs) {
+    userScanCounts.set(userId, { count: 0, lastReset: now })
+    return 0
+  }
+
+  return userScans.count
+}
+
+function incrementUserScanCount(userId: string): void {
+  const current = userScanCounts.get(userId)
+  if (current) {
+    current.count++
+  } else {
+    userScanCounts.set(userId, { count: 1, lastReset: Date.now() })
+  }
+}
+
+// Public endpoint for contract scanning
+// Rate limited: 5 requests per hour per IP (for anonymous users)
+// Authenticated users: unlimited but throttled after 3rd scan
 export async function POST(request: NextRequest) {
-  // Check rate limit first (before any expensive operations)
-  const { success, response } = await checkRateLimit(request, rateLimiters.scan)
-  if (!success && response) {
-    return response
+  const formData = await request.formData()
+  const isAuthenticated = formData.get('authenticated') === 'true'
+
+  // For non-authenticated users, apply strict rate limiting
+  if (!isAuthenticated) {
+    const { success, response } = await checkRateLimit(request, rateLimiters.scan)
+    if (!success && response) {
+      return response
+    }
   }
 
   try {
-    const formData = await request.formData()
     const file = formData.get('file') as File | null
     const text = formData.get('text') as string | null
     const email = formData.get('email') as string | null
 
     let contractText = ''
+    let pageCount = 0
 
     if (file) {
       const buffer = Buffer.from(await file.arrayBuffer())
 
       if (file.type === 'application/pdf') {
-        contractText = await extractTextFromPdf(buffer)
+        // Check page count before processing
+        const pdfParse = (await import('pdf-parse')).default
+        const pdfData = await pdfParse(buffer)
+        pageCount = pdfData.numpages
+
+        if (pageCount > MAX_PDF_PAGES) {
+          return NextResponse.json(
+            { error: `PDF too long. Maximum ${MAX_PDF_PAGES} pages allowed. Your document has ${pageCount} pages.` },
+            { status: 400 }
+          )
+        }
+
+        contractText = pdfData.text
       } else if (file.type === 'text/plain') {
         contractText = buffer.toString('utf-8')
+
+        // Estimate pages for text files (roughly 3000 chars per page)
+        pageCount = Math.ceil(contractText.length / 3000)
+        if (pageCount > MAX_PDF_PAGES) {
+          return NextResponse.json(
+            { error: `Document too long. Maximum ~${MAX_PDF_PAGES * 3000} characters allowed.` },
+            { status: 400 }
+          )
+        }
       } else {
         return NextResponse.json(
           { error: 'Unsupported file type. Please upload a PDF or text file.' },
@@ -35,6 +97,15 @@ export async function POST(request: NextRequest) {
       }
     } else if (text) {
       contractText = text
+
+      // Check text length
+      pageCount = Math.ceil(text.length / 3000)
+      if (pageCount > MAX_PDF_PAGES) {
+        return NextResponse.json(
+          { error: `Text too long. Maximum ~${MAX_PDF_PAGES * 3000} characters allowed.` },
+          { status: 400 }
+        )
+      }
     } else {
       return NextResponse.json(
         { error: 'Please provide a file or text to scan' },
@@ -47,6 +118,33 @@ export async function POST(request: NextRequest) {
         { error: 'Contract text is too short to analyze' },
         { status: 400 }
       )
+    }
+
+    // For authenticated users, add throttling after 3rd scan
+    let userId: string | null = null
+    if (isAuthenticated) {
+      // Get user from auth header if available
+      const authHeader = request.headers.get('authorization')
+      if (authHeader) {
+        const token = authHeader.replace('Bearer ', '')
+        const { data: { user } } = await supabase.auth.getUser(token)
+        userId = user?.id || null
+      }
+
+      // Use IP as fallback identifier
+      if (!userId) {
+        const forwardedFor = request.headers.get('x-forwarded-for')
+        userId = forwardedFor?.split(',')[0].trim() || 'anonymous'
+      }
+
+      const scanCount = getUserScanCount(userId)
+
+      // After 3rd scan in an hour, add a 5-second delay (throttling)
+      if (scanCount >= 3) {
+        await new Promise(resolve => setTimeout(resolve, 5000))
+      }
+
+      incrementUserScanCount(userId)
     }
 
     // Scan without athlete context (public/generic scan)

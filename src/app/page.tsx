@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import AuthModal from '@/components/AuthModal'
+import type { User } from '@supabase/supabase-js'
 
 interface RedFlag {
   name: string
@@ -44,21 +47,47 @@ export default function Home() {
   const [result, setResult] = useState<ScanResult | null>(null)
   const [copiedAll, setCopiedAll] = useState(false)
   const [hasScanned, setHasScanned] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signup')
+
+  const supabase = createClient()
 
   useEffect(() => {
+    // Check auth state
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        setEmail(user.email || '')
+      }
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+      if (session?.user) {
+        setEmail(session.user.email || '')
+      }
+    })
+
+    // Check localStorage for free scan (only matters if not logged in)
     const scanned = localStorage.getItem('fairplay_scanned')
     if (scanned === 'true') {
       setHasScanned(true)
     }
-  }, [])
+
+    return () => subscription.unsubscribe()
+  }, [supabase.auth])
 
   async function handleScan() {
-    if (hasScanned) {
+    // For non-authenticated users, check scan limit
+    if (!user && hasScanned) {
       setPageState('limit_reached')
       return
     }
 
-    if (!email || !email.includes('@')) {
+    // Non-authenticated users need email
+    if (!user && (!email || !email.includes('@'))) {
       setError('Please enter your email to receive your results')
       return
     }
@@ -67,16 +96,19 @@ export default function Home() {
     setPageState('scanning')
 
     try {
-      const registerResponse = await fetch('/api/free-scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, action: 'use' }),
-      })
-      const registerData = await registerResponse.json()
+      // Only register free scan for non-authenticated users
+      if (!user) {
+        const registerResponse = await fetch('/api/free-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, action: 'use' }),
+        })
+        const registerData = await registerResponse.json()
 
-      if (registerData.error && registerResponse.status === 403) {
-        setPageState('limit_reached')
-        return
+        if (registerData.error && registerResponse.status === 403) {
+          setPageState('limit_reached')
+          return
+        }
       }
 
       const formData = new FormData()
@@ -87,7 +119,16 @@ export default function Home() {
       } else {
         throw new Error('Please provide a contract to scan')
       }
-      formData.append('email', email)
+
+      // Include email for results delivery
+      if (email) {
+        formData.append('email', email)
+      }
+
+      // For authenticated users, include auth flag
+      if (user) {
+        formData.append('authenticated', 'true')
+      }
 
       const response = await fetch('/api/scan', {
         method: 'POST',
@@ -102,14 +143,23 @@ export default function Home() {
       const data = await response.json()
       setResult(data)
 
-      localStorage.setItem('fairplay_scanned', 'true')
-      setHasScanned(true)
+      // Only set localStorage for non-authenticated users
+      if (!user) {
+        localStorage.setItem('fairplay_scanned', 'true')
+        setHasScanned(true)
+      }
 
       setPageState('results')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       setPageState('scanner')
     }
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    setUser(null)
+    setEmail('')
   }
 
   return (
@@ -121,6 +171,16 @@ export default function Home() {
       <div className="fixed top-0 left-1/4 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[128px] pointer-events-none" />
       <div className="fixed bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[128px] pointer-events-none" />
 
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={() => {
+          // Refresh user state handled by onAuthStateChange listener
+        }}
+        defaultMode={authModalMode}
+      />
+
       {/* Header */}
       <header className="relative z-10 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
@@ -131,18 +191,40 @@ export default function Home() {
             <span className="text-xl font-semibold tracking-tight">Fair Play</span>
           </Link>
           <nav className="flex items-center gap-2">
-            <Link
-              href="/login"
-              className="px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="px-5 py-2.5 text-sm bg-white text-black rounded-full font-medium hover:bg-white/90 transition-colors"
-            >
-              Get Started
-            </Link>
+            {user ? (
+              <>
+                <span className="px-4 py-2 text-sm text-white/50">
+                  {user.email}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setAuthModalMode('signin')
+                    setAuthModalOpen(true)
+                  }}
+                  className="px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => {
+                    setAuthModalMode('signup')
+                    setAuthModalOpen(true)
+                  }}
+                  className="px-5 py-2.5 text-sm bg-white text-black rounded-full font-medium hover:bg-white/90 transition-colors"
+                >
+                  Create Account
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -188,7 +270,7 @@ export default function Home() {
                     <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    First scan free
+                    {user ? 'Unlimited scans' : 'First scan free'}
                   </div>
                 </div>
               </div>
@@ -197,19 +279,21 @@ export default function Home() {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-amber-500/20 to-transparent rounded-3xl blur-2xl" />
                 <div className="relative bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8">
-                  {/* Email Input */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-white/40 mb-3 uppercase tracking-wider">
-                      Your Email
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@email.com"
-                      className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-400/50 focus:bg-white/[0.07] transition-all"
-                    />
-                  </div>
+                  {/* Email Input - only show for non-authenticated users */}
+                  {!user && (
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-white/40 mb-3 uppercase tracking-wider">
+                        Your Email
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@email.com"
+                        className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-amber-400/50 focus:bg-white/[0.07] transition-all"
+                      />
+                    </div>
+                  )}
 
                   {/* Input Mode Toggle */}
                   <div className="flex gap-2 p-1 bg-white/5 rounded-xl mb-6">
@@ -276,14 +360,14 @@ export default function Home() {
                   {/* Scan Button */}
                   <button
                     onClick={handleScan}
-                    disabled={!email || (inputMode === 'file' ? !file : !text.trim())}
+                    disabled={(!user && !email) || (inputMode === 'file' ? !file : !text.trim())}
                     className="mt-6 w-full py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-xl font-semibold text-lg hover:from-amber-300 hover:to-amber-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all disabled:hover:from-amber-400 disabled:hover:to-amber-500"
                   >
                     Analyze Contract
                   </button>
 
                   <p className="mt-4 text-center text-white/30 text-sm">
-                    Free analysis. No credit card required.
+                    {user ? 'Unlimited scans with your account.' : 'Free analysis. No credit card required.'}
                   </p>
                 </div>
               </div>
@@ -364,14 +448,21 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="text-green-400">Results sent to <span className="font-medium">{email}</span></span>
+                <span className="text-green-400">
+                  {user ? 'Analysis complete!' : <>Results sent to <span className="font-medium">{email}</span></>}
+                </span>
               </div>
-              <Link
-                href="/signup"
-                className="px-5 py-2.5 bg-white text-black rounded-full text-sm font-medium hover:bg-white/90 transition-colors"
-              >
-                Get Unlimited Scans
-              </Link>
+              {!user && (
+                <button
+                  onClick={() => {
+                    setAuthModalMode('signup')
+                    setAuthModalOpen(true)
+                  }}
+                  className="px-5 py-2.5 bg-white text-black rounded-full text-sm font-medium hover:bg-white/90 transition-colors"
+                >
+                  Get Unlimited Scans
+                </button>
+              )}
             </div>
 
             {/* Risk Level */}
@@ -459,19 +550,41 @@ export default function Home() {
               </div>
             )}
 
-            {/* CTA */}
-            <div className="text-center py-12">
-              <h3 className="text-2xl font-bold mb-3">Need more scans?</h3>
-              <p className="text-white/50 mb-8">
-                Create a free account for unlimited access.
-              </p>
-              <Link
-                href="/signup"
-                className="inline-flex px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-full font-semibold hover:from-amber-300 hover:to-amber-400 transition-all"
-              >
-                Create Free Account
-              </Link>
-            </div>
+            {/* CTA - only show for non-authenticated users */}
+            {!user && (
+              <div className="text-center py-12">
+                <h3 className="text-2xl font-bold mb-3">Need more scans?</h3>
+                <p className="text-white/50 mb-8">
+                  Create a free account for unlimited access.
+                </p>
+                <button
+                  onClick={() => {
+                    setAuthModalMode('signup')
+                    setAuthModalOpen(true)
+                  }}
+                  className="inline-flex px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-full font-semibold hover:from-amber-300 hover:to-amber-400 transition-all"
+                >
+                  Create Free Account
+                </button>
+              </div>
+            )}
+
+            {/* Scan Again button for authenticated users */}
+            {user && (
+              <div className="text-center py-12">
+                <button
+                  onClick={() => {
+                    setPageState('scanner')
+                    setResult(null)
+                    setFile(null)
+                    setText('')
+                  }}
+                  className="inline-flex px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-full font-semibold hover:from-amber-300 hover:to-amber-400 transition-all"
+                >
+                  Scan Another Contract
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
