@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { scanContract, extractTextFromPdf } from '@/lib/services/contract-scanner'
+import { sendScanResultsEmail } from '@/lib/services/email'
 
 // Public endpoint for free contract scanning (no auth required)
 export async function POST(request: NextRequest) {
@@ -7,6 +8,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const text = formData.get('text') as string | null
+    const email = formData.get('email') as string | null
 
     let contractText = ''
 
@@ -41,6 +43,19 @@ export async function POST(request: NextRequest) {
 
     // Scan without athlete context (public/generic scan)
     const result = await scanContract(contractText, null)
+
+    // Send email with results (non-blocking)
+    if (email && email.includes('@')) {
+      sendScanResultsEmail({
+        email,
+        summary: result.summary,
+        overallRisk: result.overallRisk,
+        redFlagsCount: result.redFlags.length,
+        redFlags: result.redFlags,
+        keyTerms: result.keyTerms,
+        suggestedRedlinesCount: result.suggestedRedlines?.length || 0,
+      }).catch(err => console.error('Email send failed:', err))
+    }
 
     return NextResponse.json(result)
   } catch (error) {
