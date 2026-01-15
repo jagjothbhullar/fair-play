@@ -438,6 +438,155 @@ model ContractRedFlagPattern {
 }
 
 // ============================================================================
+// NIL MARKET (Levels.fyi for athletes)
+// ============================================================================
+
+model NILDealReport {
+  id              String   @id @default(cuid())
+
+  // Deal details (anonymous)
+  sport           String   // "Men's Basketball", "Women's Soccer", etc.
+  sportCategory   String   // "basketball", "football", "soccer", etc.
+  division        Division @default(D1)
+  conference      String?  // "ACC", "Big Ten", etc.
+  schoolTier      SchoolTier @default(MID_MAJOR)
+
+  // Athlete profile (anonymous)
+  followerCount   Int?     // Social media following
+  followerTier    FollowerTier?
+  classYear       ClassYear?
+  isStarter       Boolean?
+
+  // Compensation
+  dealType        DealType
+  compensationCash    Int      // In dollars
+  compensationProduct Int?     // Estimated product value
+  totalValue          Int      // Total deal value
+  isRecurring         Boolean  @default(false)
+  dealLengthMonths    Int?
+
+  // Deal context
+  brandIndustry   String?  // "apparel", "food_beverage", "tech", etc.
+  brandTier       BrandTier @default(LOCAL)
+  deliverables    String?  // "2 posts, 1 appearance"
+  hoursWorked     Int?     // Estimated hours
+
+  // Satisfaction
+  satisfactionRating  Int?     // 1-5
+  wouldDoAgain        Boolean?
+  notes               String?  @db.Text
+
+  // Verification
+  isVerified      Boolean  @default(false)
+  verifiedAt      DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([sport])
+  @@index([dealType])
+  @@index([division])
+  @@index([totalValue])
+}
+
+// ============================================================================
+// WATER COOLER (Blind for athletes)
+// ============================================================================
+
+model WaterCoolerPost {
+  id              String   @id @default(cuid())
+
+  // Author context (anonymous but verified)
+  authorSport     String   // "Men's Basketball"
+  authorDivision  Division @default(D1)
+  authorConference String? // Optional: "Pac-12"
+  isVerifiedAthlete Boolean @default(false)
+
+  // Post content
+  title           String
+  content         String   @db.Text
+  category        PostCategory
+
+  // Engagement
+  upvotes         Int      @default(0)
+  downvotes       Int      @default(0)
+  viewCount       Int      @default(0)
+
+  // Moderation
+  isApproved      Boolean  @default(true)
+  isPinned        Boolean  @default(false)
+  isLocked        Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  comments        WaterCoolerComment[]
+
+  @@index([category])
+  @@index([authorSport])
+  @@index([createdAt])
+}
+
+model WaterCoolerComment {
+  id              String   @id @default(cuid())
+  postId          String
+  post            WaterCoolerPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Author context
+  authorSport     String?
+  authorDivision  Division?
+  isVerifiedAthlete Boolean @default(false)
+  isOP            Boolean  @default(false) // Is original poster
+
+  content         String   @db.Text
+  upvotes         Int      @default(0)
+  downvotes       Int      @default(0)
+
+  parentId        String?  // For nested replies
+
+  createdAt       DateTime @default(now())
+
+  @@index([postId])
+  @@index([parentId])
+}
+
+// ============================================================================
+// NEW ENUMS FOR NIL MARKET & WATER COOLER
+// ============================================================================
+
+enum SchoolTier {
+  BLUE_BLOOD      // Top programs (Duke, Alabama, Ohio State)
+  POWER_FIVE      // Power 5 conferences
+  MID_MAJOR       // Solid programs outside P5
+  SMALL_SCHOOL    // Smaller D1, D2, D3
+}
+
+enum FollowerTier {
+  MICRO           // <10k
+  SMALL           // 10k-50k
+  MEDIUM          // 50k-100k
+  LARGE           // 100k-500k
+  MASSIVE         // 500k+
+}
+
+enum BrandTier {
+  LOCAL           // Local businesses
+  REGIONAL        // Regional chains
+  NATIONAL        // National brands
+  GLOBAL          // Global brands (Nike, Gatorade)
+}
+
+enum PostCategory {
+  DEALS           // Deal discussions
+  COMPLIANCE      // Compliance questions
+  SCHOOL_LIFE     // School/team life
+  TRANSFERS       // Transfer portal
+  AGENTS          // Agent discussions
+  BRAND_REVIEWS   // Brand experiences
+  GENERAL         // General discussion
+  ADVICE          // Asking for advice
+}
+
+// ============================================================================
 // ENUMS
 // ============================================================================
 
