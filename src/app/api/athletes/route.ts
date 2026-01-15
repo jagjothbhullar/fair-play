@@ -21,6 +21,11 @@ export async function GET(request: NextRequest) {
   // Get all athletes
   const allAthletes = getCachedAthletes()
 
+  // Check if requesting similar athletes
+  if (searchParams.get('similar') === 'true') {
+    return handleSimilarAthletes(searchParams, allAthletes)
+  }
+
   // If requesting full stats
   if (searchParams.get('stats') === 'full') {
     return NextResponse.json(getAthleteStatistics(allAthletes))
@@ -158,4 +163,113 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
+}
+
+// Helper function to find similar athletes
+function handleSimilarAthletes(
+  searchParams: URLSearchParams,
+  allAthletes: SyntheticAthlete[]
+): NextResponse {
+  const sport = searchParams.get('sport')
+  const conferenceType = searchParams.get('conferenceType')
+  const followerTier = searchParams.get('followerTier')
+  const limit = Math.min(parseInt(searchParams.get('limit') || '5'), 10)
+
+  if (!sport) {
+    return NextResponse.json({ error: 'Sport is required' }, { status: 400 })
+  }
+
+  // Define follower ranges for matching
+  const followerRanges: Record<string, { min: number; max: number }> = {
+    'under_1k': { min: 0, max: 1000 },
+    '1k_10k': { min: 1000, max: 10000 },
+    '10k_50k': { min: 10000, max: 50000 },
+    '50k_100k': { min: 50000, max: 100000 },
+    '100k_500k': { min: 100000, max: 500000 },
+    '500k_1m': { min: 500000, max: 1000000 },
+    '1m_plus': { min: 1000000, max: Infinity },
+  }
+
+  // Get follower range for matching (expand to adjacent tiers for more results)
+  const tierKeys = Object.keys(followerRanges)
+  const currentTierIndex = followerTier ? tierKeys.indexOf(followerTier) : -1
+
+  let minFollowers = 0
+  let maxFollowers = Infinity
+
+  if (currentTierIndex >= 0) {
+    // Include current tier and adjacent tiers for broader matching
+    const startIdx = Math.max(0, currentTierIndex - 1)
+    const endIdx = Math.min(tierKeys.length - 1, currentTierIndex + 1)
+    minFollowers = followerRanges[tierKeys[startIdx]].min
+    maxFollowers = followerRanges[tierKeys[endIdx]].max
+  }
+
+  // Map conference types to school conference types
+  const conferenceTypeMap: Record<string, string[]> = {
+    'POWER_FOUR': ['POWER_FOUR'],
+    'GROUP_OF_FIVE': ['GROUP_OF_FIVE'],
+    'MID_MAJOR': ['MID_MAJOR'],
+    'FCS': ['FCS'],
+  }
+
+  // Filter athletes by criteria
+  let similarAthletes = allAthletes.filter(athlete => {
+    // Must match sport (normalize sport names for comparison)
+    const sportMatch = athlete.sport.toLowerCase().includes(sport.toLowerCase()) ||
+                       sport.toLowerCase().includes(athlete.sport.toLowerCase().replace("'s", "").replace("women", "").replace("men", "").trim())
+
+    if (!sportMatch) return false
+
+    // Conference type matching
+    if (conferenceType && conferenceTypeMap[conferenceType]) {
+      const school = californiaSchools.find(s => s.shortName === athlete.schoolShortName)
+      if (school && !conferenceTypeMap[conferenceType].includes(school.conferenceType)) {
+        return false
+      }
+    }
+
+    // Follower range matching
+    if (athlete.followers < minFollowers || athlete.followers > maxFollowers) {
+      return false
+    }
+
+    return true
+  })
+
+  // Sort by NIL value (closest to median) and take top results
+  similarAthletes = sortAthletes(similarAthletes, 'nilValue', 'desc')
+
+  // Diversify results - try to get athletes from different schools
+  const diversifiedAthletes: SyntheticAthlete[] = []
+  const usedSchools = new Set<string>()
+
+  for (const athlete of similarAthletes) {
+    if (diversifiedAthletes.length >= limit) break
+    if (!usedSchools.has(athlete.schoolShortName) || diversifiedAthletes.length < limit - 2) {
+      diversifiedAthletes.push(athlete)
+      usedSchools.add(athlete.schoolShortName)
+    }
+  }
+
+  // If we don't have enough, add more from the same schools
+  if (diversifiedAthletes.length < limit) {
+    for (const athlete of similarAthletes) {
+      if (diversifiedAthletes.length >= limit) break
+      if (!diversifiedAthletes.includes(athlete)) {
+        diversifiedAthletes.push(athlete)
+      }
+    }
+  }
+
+  return NextResponse.json({
+    athletes: diversifiedAthletes.slice(0, limit),
+    totalMatching: similarAthletes.length,
+    criteria: {
+      sport,
+      conferenceType,
+      followerTier,
+      followerRange: { min: minFollowers, max: maxFollowers === Infinity ? 'unlimited' : maxFollowers },
+    },
+  })
 }

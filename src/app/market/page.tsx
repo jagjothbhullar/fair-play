@@ -4,56 +4,15 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import NILCalculator from '@/components/NILCalculator'
-import AthleteBrowser from '@/components/AthleteBrowser'
+import NILCalculator, { type CalculatorInputs } from '@/components/NILCalculator'
+import SimilarAthletes from '@/components/SimilarAthletes'
 import type { User } from '@supabase/supabase-js'
 
-interface NILDeal {
-  id: string
-  sport: string
-  sportCategory: string
-  division: string
-  conference: string | null
-  schoolTier: string
-  followerCount: number | null
-  followerTier: string | null
-  classYear: string | null
-  isStarter: boolean | null
-  dealType: string
-  compensationCash: number
-  compensationProduct: number | null
-  totalValue: number
-  brandIndustry: string | null
-  brandTier: string
-  deliverables: string | null
-  hoursWorked: number | null
-  satisfactionRating: number | null
-  wouldDoAgain: boolean | null
-  notes: string | null
-  isVerified: boolean
-  createdAt: string
-}
-
-interface MarketStats {
-  totalDeals: number
-  avgDealValue: number
-  medianDealValue: number
-  topSport: string
-  topDealType: string
-}
-
 export default function NILMarketPage() {
-  const [deals, setDeals] = useState<NILDeal[]>([])
-  const [stats, setStats] = useState<MarketStats | null>(null)
-  const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
   const [authChecking, setAuthChecking] = useState(true)
-  const [filters, setFilters] = useState({
-    sport: '',
-    dealType: '',
-    schoolTier: '',
-    brandTier: '',
-  })
+  const [calculatorInputs, setCalculatorInputs] = useState<CalculatorInputs | null>(null)
+  const [hasCalculated, setHasCalculated] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
@@ -71,72 +30,15 @@ export default function NILMarketPage() {
     checkAuth()
   }, [supabase.auth, router])
 
-  useEffect(() => {
-    if (!authChecking && user) {
-      fetchDeals()
-    }
-  }, [filters, authChecking, user])
-
-  async function fetchDeals() {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (filters.sport) params.set('sport', filters.sport)
-      if (filters.dealType) params.set('dealType', filters.dealType)
-      if (filters.schoolTier) params.set('schoolTier', filters.schoolTier)
-      if (filters.brandTier) params.set('brandTier', filters.brandTier)
-
-      const response = await fetch(`/api/market?${params}`)
-      const data = await response.json()
-      setDeals(data.deals)
-      setStats(data.stats)
-    } catch (error) {
-      console.error('Failed to fetch deals:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   async function handleSignOut() {
     await supabase.auth.signOut()
     router.push('/')
   }
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000) {
-      return `$${(value / 1000).toFixed(1)}k`
-    }
-    return `$${value}`
+  function handleCalculate(inputs: CalculatorInputs) {
+    setCalculatorInputs(inputs)
+    setHasCalculated(true)
   }
-
-  const sportCategories = [
-    "Men's Basketball", "Women's Basketball", "Football", "Women's Volleyball",
-    "Baseball", "Softball", "Men's Soccer", "Women's Soccer", "Women's Gymnastics",
-    "Wrestling", "Swimming & Diving", "Track & Field"
-  ]
-
-  const dealTypes = [
-    { value: "SOCIAL_POST", label: "Social Post" },
-    { value: "APPEARANCE", label: "Appearance" },
-    { value: "AUTOGRAPH", label: "Autograph" },
-    { value: "CAMP", label: "Camp" },
-    { value: "LICENSING", label: "Licensing" },
-    { value: "MERCHANDISE", label: "Merchandise" },
-  ]
-
-  const schoolTiers = [
-    { value: "BLUE_BLOOD", label: "Blue Blood" },
-    { value: "POWER_FIVE", label: "Power 5" },
-    { value: "MID_MAJOR", label: "Mid-Major" },
-    { value: "SMALL_SCHOOL", label: "Small School" },
-  ]
-
-  const brandTiers = [
-    { value: "GLOBAL", label: "Global Brand" },
-    { value: "NATIONAL", label: "National" },
-    { value: "REGIONAL", label: "Regional" },
-    { value: "LOCAL", label: "Local" },
-  ]
 
   // Show loading while checking auth
   if (authChecking) {
@@ -188,226 +90,86 @@ export default function NILMarketPage() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+      <main className="relative z-10 max-w-4xl mx-auto px-6 py-12">
         {/* Hero */}
-        <div className="mb-8">
+        <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-sm text-emerald-400 mb-6">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            {stats?.totalDeals || 0}+ verified deal reports
+            Powered by real NIL data
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            NIL Market
+            Know Your Worth
           </h1>
-          <p className="text-xl text-white/50 max-w-2xl">
-            Real compensation data from real athletes. See what deals are actually worth before you negotiate.
+          <p className="text-xl text-white/50 max-w-2xl mx-auto">
+            Calculate your NIL value and see how you compare to similar athletes.
+            Get the data you need to negotiate fair deals.
           </p>
         </div>
 
         {/* NIL Value Calculator */}
-        <div className="mb-12">
-          <NILCalculator />
-        </div>
+        <NILCalculator onCalculate={handleCalculate} />
 
-        {/* Athlete Database Browser */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {/* Similar Athletes - Shows after calculation */}
+        <SimilarAthletes
+          inputs={calculatorInputs}
+          visible={hasCalculated}
+        />
+
+        {/* Info Cards - Always visible */}
+        <div className="mt-12 grid md:grid-cols-3 gap-4">
+          <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5">
+            <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-white mb-2">Real Data</h3>
+            <p className="text-white/50 text-sm">
+              Based on CalMatters NIL Database, Opendorse Reports, and verified deal data.
+            </p>
+          </div>
+
+          <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5">
+            <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">California D1 Athlete Database</h2>
-              <p className="text-white/50 text-sm">Browse estimated NIL values for all California Division 1 athletes</p>
-            </div>
+            <h3 className="font-semibold text-white mb-2">Smart Matching</h3>
+            <p className="text-white/50 text-sm">
+              See athletes with similar profiles - same sport, school tier, and following.
+            </p>
           </div>
-          <AthleteBrowser />
-        </div>
 
-        {/* Stats Cards */}
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
-              <p className="text-white/40 text-sm mb-1">Average Deal</p>
-              <p className="text-3xl font-bold text-emerald-400">{formatCurrency(stats.avgDealValue)}</p>
+          <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5">
+            <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
+              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
-              <p className="text-white/40 text-sm mb-1">Median Deal</p>
-              <p className="text-3xl font-bold">{formatCurrency(stats.medianDealValue)}</p>
-            </div>
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
-              <p className="text-white/40 text-sm mb-1">Top Sport</p>
-              <p className="text-xl font-bold truncate">{stats.topSport}</p>
-            </div>
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
-              <p className="text-white/40 text-sm mb-1">Top Deal Type</p>
-              <p className="text-xl font-bold">{stats.topDealType.replace('_', ' ')}</p>
-            </div>
+            <h3 className="font-semibold text-white mb-2">Negotiate Better</h3>
+            <p className="text-white/50 text-sm">
+              Walk into negotiations with data-backed confidence about your value.
+            </p>
           </div>
-        )}
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          <select
-            value={filters.sport}
-            onChange={(e) => setFilters({ ...filters, sport: e.target.value })}
-            className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
-          >
-            <option value="">All Sports</option>
-            {sportCategories.map((sport) => (
-              <option key={sport} value={sport}>{sport}</option>
-            ))}
-          </select>
-
-          <select
-            value={filters.dealType}
-            onChange={(e) => setFilters({ ...filters, dealType: e.target.value })}
-            className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
-          >
-            <option value="">All Deal Types</option>
-            {dealTypes.map((type) => (
-              <option key={type.value} value={type.value}>{type.label}</option>
-            ))}
-          </select>
-
-          <select
-            value={filters.schoolTier}
-            onChange={(e) => setFilters({ ...filters, schoolTier: e.target.value })}
-            className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
-          >
-            <option value="">All School Tiers</option>
-            {schoolTiers.map((tier) => (
-              <option key={tier.value} value={tier.value}>{tier.label}</option>
-            ))}
-          </select>
-
-          <select
-            value={filters.brandTier}
-            onChange={(e) => setFilters({ ...filters, brandTier: e.target.value })}
-            className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
-          >
-            <option value="">All Brand Tiers</option>
-            {brandTiers.map((tier) => (
-              <option key={tier.value} value={tier.value}>{tier.label}</option>
-            ))}
-          </select>
-
-          {(filters.sport || filters.dealType || filters.schoolTier || filters.brandTier) && (
-            <button
-              onClick={() => setFilters({ sport: '', dealType: '', schoolTier: '', brandTier: '' })}
-              className="px-4 py-3 text-white/60 hover:text-white transition-colors"
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
-
-        {/* Deals Table */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center text-white/50">Loading deals...</div>
-          ) : deals.length === 0 ? (
-            <div className="p-12 text-center text-white/50">No deals found matching your filters</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left px-6 py-4 text-white/40 text-sm font-medium">Sport</th>
-                    <th className="text-left px-6 py-4 text-white/40 text-sm font-medium">Deal Type</th>
-                    <th className="text-left px-6 py-4 text-white/40 text-sm font-medium">Total Value</th>
-                    <th className="text-left px-6 py-4 text-white/40 text-sm font-medium">School Tier</th>
-                    <th className="text-left px-6 py-4 text-white/40 text-sm font-medium">Brand Tier</th>
-                    <th className="text-left px-6 py-4 text-white/40 text-sm font-medium">Followers</th>
-                    <th className="text-left px-6 py-4 text-white/40 text-sm font-medium">Rating</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deals.map((deal) => (
-                    <tr key={deal.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-medium">{deal.sport}</div>
-                        <div className="text-sm text-white/40">{deal.conference}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-white/10 rounded-full text-sm">
-                          {deal.dealType.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-xl font-bold text-emerald-400">
-                          {formatCurrency(deal.totalValue)}
-                        </div>
-                        {deal.compensationProduct && deal.compensationProduct > 0 && (
-                          <div className="text-xs text-white/40">
-                            +{formatCurrency(deal.compensationProduct)} product
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getSchoolTierColor(deal.schoolTier)}`}>
-                          {deal.schoolTier.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getBrandTierColor(deal.brandTier)}`}>
-                          {deal.brandTier}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-white/60">
-                        {deal.followerCount ? `${(deal.followerCount / 1000).toFixed(0)}k` : '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        {deal.satisfactionRating && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-emerald-400">{'★'.repeat(deal.satisfactionRating)}</span>
-                            <span className="text-white/20">{'★'.repeat(5 - deal.satisfactionRating)}</span>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
 
         {/* CTA */}
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-white/10 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-3">Have a deal to report?</h3>
+            <h3 className="text-2xl font-bold mb-3">Have a contract to review?</h3>
             <p className="text-white/50 mb-6">
-              Help other athletes by anonymously sharing your NIL deal data.
+              Use our AI-powered scanner to spot red flags before you sign.
             </p>
-            <button
-              className="inline-flex px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-full font-semibold hover:from-emerald-300 hover:to-emerald-400"
+            <Link
+              href="/"
+              className="inline-flex px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-full font-semibold hover:from-emerald-300 hover:to-emerald-400 transition-all"
             >
-              Submit Your Deal
-            </button>
+              Scan a Contract
+            </Link>
           </div>
         </div>
       </main>
     </div>
   )
-}
-
-function getSchoolTierColor(tier: string): string {
-  const colors: Record<string, string> = {
-    BLUE_BLOOD: 'bg-purple-500/20 text-purple-400',
-    POWER_FIVE: 'bg-blue-500/20 text-blue-400',
-    MID_MAJOR: 'bg-emerald-500/20 text-emerald-400',
-    SMALL_SCHOOL: 'bg-white/10 text-white/60',
-  }
-  return colors[tier] || colors.MID_MAJOR
-}
-
-function getBrandTierColor(tier: string): string {
-  const colors: Record<string, string> = {
-    GLOBAL: 'bg-emerald-500/20 text-emerald-400',
-    NATIONAL: 'bg-blue-500/20 text-blue-400',
-    REGIONAL: 'bg-teal-500/20 text-teal-400',
-    LOCAL: 'bg-white/10 text-white/60',
-  }
-  return colors[tier] || colors.LOCAL
 }

@@ -26,6 +26,20 @@ interface CalculatorResult {
   }
 }
 
+export interface CalculatorInputs {
+  sport: string
+  dealType: string
+  school: string
+  followerTier: string
+  isTransfer: boolean
+  hasAgent: boolean
+  conferenceType?: string
+}
+
+interface NILCalculatorProps {
+  onCalculate?: (inputs: CalculatorInputs, result: CalculatorResult) => void
+}
+
 const sports = [
   'Football',
   "Men's Basketball",
@@ -103,12 +117,11 @@ const baseDealValues: Record<string, { low: number; median: number; high: number
   'Other': { low: 400, median: 1200, high: 3000 },
 }
 
-export default function NILCalculator() {
+export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
   const [sport, setSport] = useState('')
   const [dealType, setDealType] = useState('')
   const [school, setSchool] = useState('')
   const [followerTier, setFollowerTier] = useState('')
-  const [performanceTier, setPerformanceTier] = useState('')
   const [isTransfer, setIsTransfer] = useState(false)
   const [hasAgent, setHasAgent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -177,9 +190,20 @@ export default function NILCalculator() {
       confidence = 'low'
     }
 
+    // Determine conference type for similar athlete matching
+    let conferenceType = 'MID_MAJOR'
+    if (school.startsWith('CUSTOM_')) {
+      conferenceType = school.replace('CUSTOM_', '')
+    } else if (schoolInfo) {
+      const calSchool = californiaSchools.find(s => s.shortName === school)
+      if (calSchool) {
+        conferenceType = calSchool.conferenceType
+      }
+    }
+
     // Simulate loading for UX
     setTimeout(() => {
-      setResult({
+      const calculatedResult: CalculatorResult = {
         estimation: {
           low: estimatedLow,
           median: estimatedMedian,
@@ -196,8 +220,23 @@ export default function NILCalculator() {
           total: totalMultiplier,
         },
         schoolInfo,
-      })
+      }
+
+      setResult(calculatedResult)
       setLoading(false)
+
+      // Call callback with inputs and result
+      if (onCalculate) {
+        onCalculate({
+          sport,
+          dealType,
+          school,
+          followerTier,
+          isTransfer,
+          hasAgent,
+          conferenceType,
+        }, calculatedResult)
+      }
     }, 500)
   }
 
