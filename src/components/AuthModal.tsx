@@ -9,9 +9,10 @@ interface AuthModalProps {
   onClose: () => void
   onSuccess: () => void
   defaultMode?: 'signin' | 'signup'
+  featurePrompt?: string | null
 }
 
-export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 'signup' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 'signup', featurePrompt }: AuthModalProps) {
   const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -132,14 +133,30 @@ export default function AuthModal({ isOpen, onClose, onSuccess, defaultMode = 's
               <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
                 <span className="text-black font-bold text-xl">FP</span>
               </div>
-              <h2 className="text-2xl font-bold text-white">
-                {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
-              </h2>
-              <p className="text-white/50 mt-2">
-                {mode === 'signup'
-                  ? 'Get unlimited contract scans'
-                  : 'Sign in to continue scanning'}
-              </p>
+              {featurePrompt ? (
+                <>
+                  <h2 className="text-2xl font-bold text-white">
+                    {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
+                  </h2>
+                  <p className="text-white/50 mt-2">
+                    Sign up to access <span className="text-emerald-400 font-medium">{featurePrompt}</span>
+                  </p>
+                  <p className="text-white/30 text-sm mt-1">
+                    Plus unlimited contract scans & more
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold text-white">
+                    {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
+                  </h2>
+                  <p className="text-white/50 mt-2">
+                    {mode === 'signup'
+                      ? 'Get unlimited contract scans'
+                      : 'Sign in to continue scanning'}
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Form */}

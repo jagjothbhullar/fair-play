@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
 interface Comment {
   id: string
@@ -47,12 +50,32 @@ const categories = [
 export default function WaterCoolerPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
+  const [authChecking, setAuthChecking] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [expandedPost, setExpandedPost] = useState<string | null>(null)
 
+  const router = useRouter()
+  const supabase = createClient()
+
   useEffect(() => {
-    fetchPosts()
-  }, [selectedCategory])
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/?feature=watercooler')
+        return
+      }
+      setUser(user)
+      setAuthChecking(false)
+    }
+    checkAuth()
+  }, [supabase.auth, router])
+
+  useEffect(() => {
+    if (!authChecking && user) {
+      fetchPosts()
+    }
+  }, [selectedCategory, authChecking, user])
 
   async function fetchPosts() {
     setLoading(true)
@@ -70,6 +93,11 @@ export default function WaterCoolerPage() {
     }
   }
 
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
+
   function timeAgo(dateString: string): string {
     const date = new Date(dateString)
     const now = new Date()
@@ -82,27 +110,52 @@ export default function WaterCoolerPage() {
     return `${Math.floor(seconds / 604800)}w ago`
   }
 
+  // Show loading while checking auth
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Background effects */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
-      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[128px] pointer-events-none" />
+      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none" />
 
       {/* Header */}
       <header className="relative z-10 border-b border-white/10">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
               <span className="text-black font-bold text-lg">FP</span>
             </div>
             <span className="text-xl font-semibold tracking-tight">Fair Play</span>
           </Link>
           <nav className="flex items-center gap-6">
-            <Link href="/market" className="text-white/60 hover:text-white">NIL Market</Link>
-            <Link href="/water-cooler" className="text-amber-400 font-medium">Water Cooler</Link>
-            <Link href="/signup" className="px-5 py-2.5 text-sm bg-white text-black rounded-full font-medium hover:bg-white/90">
-              Get Started
+            <Link href="/" className="text-sm text-white/70 hover:text-white transition-colors">
+              Scanner
             </Link>
+            <Link href="/market" className="text-sm text-white/70 hover:text-white transition-colors">
+              NIL Market
+            </Link>
+            <span className="text-sm text-emerald-400 font-medium">Water Cooler</span>
+            <Link href="/scans" className="text-sm text-white/70 hover:text-white transition-colors">
+              My Scans
+            </Link>
+            <div className="flex items-center gap-2 pl-4 border-l border-white/10">
+              <span className="text-sm text-white/50">
+                {user?.email}
+              </span>
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
           </nav>
         </div>
       </header>
@@ -110,8 +163,8 @@ export default function WaterCoolerPage() {
       <main className="relative z-10 max-w-5xl mx-auto px-6 py-12">
         {/* Hero */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-sm text-blue-400 mb-6">
-            <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-sm text-emerald-400 mb-6">
+            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
             Anonymous athlete discussions
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -151,7 +204,7 @@ export default function WaterCoolerPage() {
               <div
                 key={post.id}
                 className={`bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden transition-all ${
-                  post.isPinned ? 'border-amber-500/30' : ''
+                  post.isPinned ? 'border-emerald-500/30' : ''
                 }`}
               >
                 {/* Post Header */}
@@ -159,19 +212,19 @@ export default function WaterCoolerPage() {
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-sm font-bold">
                         {post.authorSport.charAt(0)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{post.authorSport}</span>
                           {post.isVerifiedAthlete && (
-                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">
+                            <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded">
                               Verified
                             </span>
                           )}
                           {post.isPinned && (
-                            <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded">
+                            <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded">
                               Pinned
                             </span>
                           )}
@@ -192,7 +245,7 @@ export default function WaterCoolerPage() {
 
                   {/* Post Actions */}
                   <div className="flex items-center gap-6 mt-6 pt-4 border-t border-white/5">
-                    <button className="flex items-center gap-2 text-white/40 hover:text-green-400 transition-colors">
+                    <button className="flex items-center gap-2 text-white/40 hover:text-emerald-400 transition-colors">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                       </svg>
@@ -231,12 +284,12 @@ export default function WaterCoolerPage() {
                                 {comment.authorSport || 'Anonymous'}
                               </span>
                               {comment.isVerifiedAthlete && (
-                                <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] rounded">
+                                <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] rounded">
                                   Verified
                                 </span>
                               )}
                               {comment.isOP && (
-                                <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded">
+                                <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] rounded">
                                   OP
                                 </span>
                               )}
@@ -244,7 +297,7 @@ export default function WaterCoolerPage() {
                             </div>
                             <p className="text-sm text-white/70">{comment.content}</p>
                             <div className="flex items-center gap-4 mt-2">
-                              <button className="text-white/30 hover:text-green-400 text-xs flex items-center gap-1">
+                              <button className="text-white/30 hover:text-emerald-400 text-xs flex items-center gap-1">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                                 </svg>
@@ -264,17 +317,16 @@ export default function WaterCoolerPage() {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-3">Join the conversation</h3>
+          <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-white/10 rounded-2xl p-8">
+            <h3 className="text-2xl font-bold mb-3">Start a discussion</h3>
             <p className="text-white/50 mb-6">
-              Get verified as an athlete to post and comment anonymously.
+              Share your experiences and get advice from verified athletes.
             </p>
-            <Link
-              href="/signup"
-              className="inline-flex px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black rounded-full font-semibold hover:from-amber-300 hover:to-amber-400"
+            <button
+              className="inline-flex px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-full font-semibold hover:from-emerald-300 hover:to-emerald-400"
             >
-              Create Account
-            </Link>
+              Create Post
+            </button>
           </div>
         </div>
       </main>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from '@/components/AuthModal'
 import AssistantChat from '@/components/AssistantChat'
@@ -51,8 +52,10 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signup')
+  const [featurePrompt, setFeaturePrompt] = useState<string | null>(null)
 
   const supabase = createClient()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     // Check auth state
@@ -79,6 +82,20 @@ export default function Home() {
 
     return () => subscription.unsubscribe()
   }, [supabase.auth])
+
+  // Check for feature redirect (from protected pages)
+  useEffect(() => {
+    const feature = searchParams.get('feature')
+    if (feature && !user) {
+      if (feature === 'market') {
+        setFeaturePrompt('NIL Market')
+      } else if (feature === 'watercooler') {
+        setFeaturePrompt('Water Cooler')
+      }
+      setAuthModalMode('signup')
+      setAuthModalOpen(true)
+    }
+  }, [searchParams, user])
 
   async function handleScan() {
     // For non-authenticated users, check scan limit
@@ -176,11 +193,16 @@ export default function Home() {
       {/* Auth Modal */}
       <AuthModal
         isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
+        onClose={() => {
+          setAuthModalOpen(false)
+          setFeaturePrompt(null)
+        }}
         onSuccess={() => {
           // Refresh user state handled by onAuthStateChange listener
+          setFeaturePrompt(null)
         }}
         defaultMode={authModalMode}
+        featurePrompt={featurePrompt}
       />
 
       {/* Header */}
@@ -292,6 +314,13 @@ export default function Home() {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent rounded-3xl blur-2xl" />
                 <div className="relative bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-8">
+                  {/* Free Analysis CTA */}
+                  {!user && (
+                    <p className="text-emerald-400 font-medium text-center mb-6">
+                      Analyze your first contract for free.
+                    </p>
+                  )}
+
                   {/* Email Input - only show for non-authenticated users */}
                   {!user && (
                     <div className="mb-6">
@@ -385,6 +414,73 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            {/* Premium Features Teaser - Only show to non-authenticated users */}
+            {!user && (
+              <div className="mt-20 pt-12 border-t border-white/5">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold mb-4">Unlock More with a Free Account</h2>
+                  <p className="text-white/50">Create an account to access exclusive features</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* NIL Market Teaser */}
+                  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-emerald-400/30 transition-colors">
+                    <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4">
+                      <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">NIL Market</h3>
+                    <p className="text-white/50 text-sm mb-4">
+                      Real compensation data from verified athletes. See what deals are actually worth before you negotiate.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="px-2 py-1 bg-white/5 rounded-full text-xs text-white/40">500+ deals</span>
+                      <span className="px-2 py-1 bg-white/5 rounded-full text-xs text-white/40">Verified data</span>
+                      <span className="px-2 py-1 bg-white/5 rounded-full text-xs text-white/40">Filter by sport</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setFeaturePrompt('NIL Market')
+                        setAuthModalMode('signup')
+                        setAuthModalOpen(true)
+                      }}
+                      className="text-emerald-400 text-sm font-medium hover:text-emerald-300 transition-colors"
+                    >
+                      Unlock Access →
+                    </button>
+                  </div>
+
+                  {/* Water Cooler Teaser */}
+                  <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-emerald-400/30 transition-colors">
+                    <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4">
+                      <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Water Cooler</h3>
+                    <p className="text-white/50 text-sm mb-4">
+                      Anonymous discussions with verified athletes about NIL, compliance, agents, and college sports.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="px-2 py-1 bg-white/5 rounded-full text-xs text-white/40">100% anonymous</span>
+                      <span className="px-2 py-1 bg-white/5 rounded-full text-xs text-white/40">Verified athletes</span>
+                      <span className="px-2 py-1 bg-white/5 rounded-full text-xs text-white/40">Real advice</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setFeaturePrompt('Water Cooler')
+                        setAuthModalMode('signup')
+                        setAuthModalOpen(true)
+                      }}
+                      className="text-emerald-400 text-sm font-medium hover:text-emerald-300 transition-colors"
+                    >
+                      Unlock Access →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Bottom: Legal Note */}
             <div className="mt-16 pt-8 border-t border-white/5">
