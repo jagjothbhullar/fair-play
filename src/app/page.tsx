@@ -45,15 +45,11 @@ export default function Home() {
   const [copiedAll, setCopiedAll] = useState(false)
   const [hasScanned, setHasScanned] = useState(false)
 
-  // Check if user has already scanned
+  // Check if user has already scanned (for limit enforcement)
   useEffect(() => {
     const scanned = localStorage.getItem('fairplay_scanned')
-    const storedEmail = localStorage.getItem('fairplay_email')
     if (scanned === 'true') {
       setHasScanned(true)
-    }
-    if (storedEmail) {
-      setEmail(storedEmail)
     }
   }, [])
 
@@ -113,7 +109,6 @@ export default function Home() {
 
       // Mark as scanned
       localStorage.setItem('fairplay_scanned', 'true')
-      localStorage.setItem('fairplay_email', email)
       setHasScanned(true)
 
       setPageState('results')
