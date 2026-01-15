@@ -85,25 +85,32 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
 
   return (
     <>
-      {/* Chat Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
-          isOpen
-            ? 'bg-white/10 border border-white/20 rotate-0'
-            : 'bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500'
-        }`}
-      >
-        {isOpen ? (
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+      {/* Chat Button with Label */}
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
+        {!isOpen && (
+          <div className="bg-zinc-800 border border-white/10 text-white text-sm px-4 py-2 rounded-full shadow-lg animate-in fade-in slide-in-from-right-2 duration-300">
+            Ask a quick question
+          </div>
         )}
-      </button>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
+            isOpen
+              ? 'bg-white/10 border border-white/20 rotate-0'
+              : 'bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500'
+          }`}
+        >
+          {isOpen ? (
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          )}
+        </button>
+      </div>
 
       {/* Chat Panel */}
       {isOpen && (
