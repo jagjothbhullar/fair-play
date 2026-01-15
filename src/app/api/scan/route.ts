@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { scanContract, extractTextFromPdf } from '@/lib/services/contract-scanner'
 import { sendScanResultsEmail } from '@/lib/services/email'
+import { checkRateLimit, rateLimiters } from '@/lib/rate-limit'
 
 // Public endpoint for free contract scanning (no auth required)
+// Rate limited: 5 requests per hour per IP
 export async function POST(request: NextRequest) {
+  // Check rate limit first (before any expensive operations)
+  const { success, response } = await checkRateLimit(request, rateLimiters.scan)
+  if (!success && response) {
+    return response
+  }
+
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null

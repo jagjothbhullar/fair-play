@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { checkRateLimit, rateLimiters } from '@/lib/rate-limit'
 
 // Check if email can scan (GET) or register/use a scan (POST)
+// Rate limited: 10 requests per hour per IP
 export async function POST(request: NextRequest) {
+  // Check rate limit first
+  const { success, response } = await checkRateLimit(request, rateLimiters.freeScan)
+  if (!success && response) {
+    return response
+  }
+
   try {
     const { email, action } = await request.json()
 
