@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NIL Platform - Athlete-First NIL Management',
-  description: 'Manage your NIL deals, stay compliant, and protect your eligibility.',
+  title: 'Fair Play - Level the Playing Field',
+  description: 'Free contract scanner for creators, athletes, and musicians. Spot red flags before you sign.',
 }
 
 export default function RootLayout({

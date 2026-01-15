@@ -21,7 +21,7 @@ export default async function DashboardLayout({
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/deals" className="text-xl font-bold text-slate-900">
-              NIL Platform
+              Fair Play
             </Link>
             <nav className="flex items-center gap-6">
               <NavLink href="/deals">Deals</NavLink>

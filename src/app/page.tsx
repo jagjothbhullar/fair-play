@@ -6,7 +6,7 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-slate-700">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="text-2xl font-bold text-white">NIL Platform</div>
+          <div className="text-2xl font-bold text-white">Fair Play</div>
           <div className="flex gap-4">
             <Link
               href="/login"
@@ -78,7 +78,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-slate-700 mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-slate-400">
-          <p>&copy; 2025 NIL Platform. Built for athletes, by athletes.</p>
+          <p>&copy; 2025 Fair Play. Level the playing field.</p>
         </div>
       </footer>
     </div>

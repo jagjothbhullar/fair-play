@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-bold text-white">
-            NIL Platform
+            Fair Play
           </Link>
           <h1 className="text-xl text-slate-300 mt-2">Welcome back</h1>
         </div>
