@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from '@/components/AuthModal'
+import AssistantChat from '@/components/AssistantChat'
 import type { User } from '@supabase/supabase-js'
 
 interface RedFlag {
@@ -599,6 +600,15 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Quick Question Assistant */}
+      <AssistantChat
+        scanContext={result ? {
+          summary: result.summary,
+          overallRisk: result.overallRisk,
+          redFlagsCount: result.redFlags.length,
+        } : null}
+      />
     </div>
   )
 }
