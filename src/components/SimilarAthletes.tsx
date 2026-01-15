@@ -8,7 +8,7 @@ interface SyntheticAthlete {
   sport: string
   schoolShortName: string
   conference: string
-  followers: number
+  followerCount: number
   performanceTier: string
   isTransfer: boolean
   hasAgent: boolean
@@ -18,7 +18,7 @@ interface SyntheticAthlete {
     high: number
     annual: number
   }
-  marketabilityScore: number
+  marketability: number
 }
 
 interface SimilarAthletesProps {
@@ -182,7 +182,7 @@ export default function SimilarAthletes({ inputs, visible }: SimilarAthletesProp
                     <span className="text-white/20">|</span>
                     <span>{getPerformanceTierLabel(athlete.performanceTier)}</span>
                     <span className="text-white/20">|</span>
-                    <span>{formatFollowers(athlete.followers)} followers</span>
+                    <span>{formatFollowers(athlete.followerCount)} followers</span>
                   </div>
                 </div>
                 <div className="text-right">

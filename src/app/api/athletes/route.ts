@@ -230,7 +230,7 @@ function handleSimilarAthletes(
     }
 
     // Follower range matching
-    if (athlete.followers < minFollowers || athlete.followers > maxFollowers) {
+    if (athlete.followerCount < minFollowers || athlete.followerCount > maxFollowers) {
       return false
     }
 
