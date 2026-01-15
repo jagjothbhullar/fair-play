@@ -2,16 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { scanContract } from '@/lib/services/contract-scanner'
 import { sendScanResultsEmail } from '@/lib/services/email'
 import { checkRateLimit, rateLimiters } from '@/lib/rate-limit'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Page limit for PDF files
 const MAX_PDF_PAGES = 25
 
-// Create Supabase client for server-side auth verification
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy-initialize Supabase client (only when needed at runtime)
+let supabase: SupabaseClient | null = null
+function getSupabase(): SupabaseClient | null {
+  if (!supabase && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  }
+  return supabase
+}
 
 // Track authenticated user scans for throttling
 const userScanCounts = new Map<string, { count: number; lastReset: number }>()
@@ -125,9 +131,10 @@ export async function POST(request: NextRequest) {
     if (isAuthenticated) {
       // Get user from auth header if available
       const authHeader = request.headers.get('authorization')
-      if (authHeader) {
+      const supabaseClient = getSupabase()
+      if (authHeader && supabaseClient) {
         const token = authHeader.replace('Bearer ', '')
-        const { data: { user } } = await supabase.auth.getUser(token)
+        const { data: { user } } = await supabaseClient.auth.getUser(token)
         userId = user?.id || null
       }
 
