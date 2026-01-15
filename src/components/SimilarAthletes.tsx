@@ -37,20 +37,23 @@ export default function SimilarAthletes({ inputs, visible }: SimilarAthletesProp
       return
     }
 
+    // Capture inputs for use in async function (TypeScript narrowing)
+    const currentInputs = inputs
+
     async function fetchSimilarAthletes() {
       setLoading(true)
       try {
         const params = new URLSearchParams({
           similar: 'true',
-          sport: inputs.sport,
+          sport: currentInputs.sport,
           limit: '5',
         })
 
-        if (inputs.conferenceType) {
-          params.set('conferenceType', inputs.conferenceType)
+        if (currentInputs.conferenceType) {
+          params.set('conferenceType', currentInputs.conferenceType)
         }
-        if (inputs.followerTier) {
-          params.set('followerTier', inputs.followerTier)
+        if (currentInputs.followerTier) {
+          params.set('followerTier', currentInputs.followerTier)
         }
 
         const response = await fetch(`/api/athletes?${params}`)
