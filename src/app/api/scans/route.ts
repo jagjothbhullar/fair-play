@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
         redFlagsCount: true,
         redFlags: true,
         keyTerms: true,
-        suggestedRedlines: true,
         createdAt: true,
       },
     })

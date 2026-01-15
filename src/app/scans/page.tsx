@@ -21,13 +21,6 @@ interface KeyTerms {
   usageRights: string | null
 }
 
-interface SuggestedRedline {
-  original: string
-  revised: string
-  explanation: string
-  priority: 'must_change' | 'should_change' | 'consider'
-}
-
 interface ScanHistoryItem {
   id: string
   fileName: string | null
@@ -38,7 +31,6 @@ interface ScanHistoryItem {
   redFlagsCount: number
   redFlags: RedFlag[] | null
   keyTerms: KeyTerms | null
-  suggestedRedlines: SuggestedRedline[] | null
   createdAt: string
 }
 
@@ -86,22 +78,31 @@ export default function ScansPage() {
     }
   }
 
-  function getPriorityColor(priority: string) {
-    switch (priority) {
-      case 'must_change': return 'text-red-400 bg-red-500/10'
-      case 'should_change': return 'text-yellow-400 bg-yellow-500/10'
-      case 'consider': return 'text-blue-400 bg-blue-500/10'
-      default: return 'text-white/50 bg-white/5'
-    }
+  function getRiskMeterFill(currentRisk: string, level: string): boolean {
+    const order = ['low', 'medium', 'high', 'critical']
+    const currentIndex = order.indexOf(currentRisk.toLowerCase())
+    const levelIndex = order.indexOf(level)
+    return levelIndex <= currentIndex
   }
 
-  function getPriorityLabel(priority: string) {
-    switch (priority) {
-      case 'must_change': return 'Must Change'
-      case 'should_change': return 'Should Change'
-      case 'consider': return 'Consider'
-      default: return priority
+  function getRiskMeterColor(risk: string): string {
+    const colors: Record<string, string> = {
+      low: 'bg-emerald-500',
+      medium: 'bg-yellow-500',
+      high: 'bg-orange-500',
+      critical: 'bg-red-500',
     }
+    return colors[risk.toLowerCase()] || colors.medium
+  }
+
+  function sortRedFlagsBySeverity(flags: RedFlag[]): RedFlag[] {
+    const severityOrder: Record<string, number> = {
+      critical: 0,
+      high: 1,
+      medium: 2,
+      low: 3,
+    }
+    return [...flags].sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
   }
 
   function formatDate(dateString: string) {
@@ -235,13 +236,42 @@ export default function ScansPage() {
 
                 {expandedScan === scan.id && (
                   <div className="px-6 pb-6 border-t border-white/10 pt-6 space-y-6">
-                    {/* Summary */}
-                    <div>
-                      <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">Summary</h4>
-                      <p className="text-white/70 leading-relaxed">{scan.summary}</p>
+                    {/* Risk Meter + Summary Combined */}
+                    <div className={`rounded-xl p-6 ${getRiskColor(scan.overallRisk)}`}>
+                      {/* Risk Meter */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <p className="text-xs uppercase tracking-wider text-white/50 mb-1">Risk Assessment</p>
+                          <h4 className="text-xl font-bold">
+                            {scan.overallRisk.charAt(0).toUpperCase() + scan.overallRisk.slice(1)} Risk
+                          </h4>
+                        </div>
+                        {/* Visual Risk Meter */}
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="flex gap-1">
+                            {['low', 'medium', 'high', 'critical'].map((level) => (
+                              <div
+                                key={level}
+                                className={`w-6 h-6 rounded transition-all ${
+                                  getRiskMeterFill(scan.overallRisk, level)
+                                    ? getRiskMeterColor(scan.overallRisk)
+                                    : 'bg-white/10'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-white/40">
+                            {scan.redFlagsCount} issue{scan.redFlagsCount !== 1 ? 's' : ''} found
+                          </span>
+                        </div>
+                      </div>
+                      {/* Summary inside risk box */}
+                      <div className="pt-4 border-t border-white/10">
+                        <p className="text-white/70 leading-relaxed">{scan.summary}</p>
+                      </div>
                     </div>
 
-                    {/* Key Terms */}
+                    {/* Key Terms - Moved up */}
                     {scan.keyTerms && (
                       <div>
                         <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">Key Terms</h4>
@@ -280,14 +310,14 @@ export default function ScansPage() {
                       </div>
                     )}
 
-                    {/* Red Flags */}
+                    {/* Red Flags - Sorted by severity */}
                     {scan.redFlags && scan.redFlags.length > 0 && (
                       <div>
                         <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">
-                          Red Flags ({scan.redFlags.length})
+                          Issues to Address ({scan.redFlags.length})
                         </h4>
                         <div className="space-y-3">
-                          {scan.redFlags.map((flag, index) => (
+                          {sortRedFlagsBySeverity(scan.redFlags).map((flag, index) => (
                             <div
                               key={index}
                               className={`rounded-xl p-4 border ${getSeverityColor(flag.severity)}`}
@@ -308,40 +338,6 @@ export default function ScansPage() {
                                 <span className="text-emerald-400 text-xs font-medium mt-0.5">Recommendation:</span>
                                 <p className="text-sm text-emerald-400/80">{flag.recommendation}</p>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Suggested Redlines */}
-                    {scan.suggestedRedlines && scan.suggestedRedlines.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-white/40 uppercase tracking-wider mb-3">
-                          Suggested Changes ({scan.suggestedRedlines.length})
-                        </h4>
-                        <div className="space-y-3">
-                          {scan.suggestedRedlines.map((redline, index) => (
-                            <div
-                              key={index}
-                              className="bg-white/[0.03] rounded-xl p-4 border border-white/10"
-                            >
-                              <div className="flex items-center gap-2 mb-3">
-                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(redline.priority)}`}>
-                                  {getPriorityLabel(redline.priority)}
-                                </span>
-                              </div>
-                              <div className="space-y-2 mb-3">
-                                <div className="bg-red-500/10 rounded-lg p-3 border-l-2 border-red-500">
-                                  <p className="text-xs text-red-400/60 mb-1">Original</p>
-                                  <p className="text-sm text-white/70 line-through">{redline.original}</p>
-                                </div>
-                                <div className="bg-emerald-500/10 rounded-lg p-3 border-l-2 border-emerald-500">
-                                  <p className="text-xs text-emerald-400/60 mb-1">Suggested</p>
-                                  <p className="text-sm text-white">{redline.revised}</p>
-                                </div>
-                              </div>
-                              <p className="text-sm text-white/50">{redline.explanation}</p>
                             </div>
                           ))}
                         </div>

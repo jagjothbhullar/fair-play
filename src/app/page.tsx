@@ -16,13 +16,6 @@ interface RedFlag {
   recommendation: string
 }
 
-interface SuggestedRedline {
-  original: string
-  revised: string
-  explanation: string
-  priority: 'must_change' | 'should_change' | 'consider'
-}
-
 interface ScanResult {
   summary: string
   redFlags: RedFlag[]
@@ -34,7 +27,6 @@ interface ScanResult {
     usageRights: string | null
   }
   overallRisk: 'low' | 'medium' | 'high' | 'critical'
-  suggestedRedlines: SuggestedRedline[]
 }
 
 type PageState = 'scanner' | 'scanning' | 'results' | 'limit_reached'
@@ -47,7 +39,6 @@ function HomeContent() {
   const [inputMode, setInputMode] = useState<'file' | 'text'>('file')
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ScanResult | null>(null)
-  const [copiedAll, setCopiedAll] = useState(false)
   const [hasScanned, setHasScanned] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -574,40 +565,42 @@ function HomeContent() {
               )}
             </div>
 
-            {/* Risk Level */}
+            {/* Risk Assessment + Summary Combined */}
             <div className={`rounded-2xl p-8 mb-6 ${getRiskStyles(result.overallRisk).bg}`}>
-              <div className="flex items-center justify-between">
+              {/* Risk Meter */}
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <p className="text-sm uppercase tracking-wider text-white/50 mb-2">Overall Risk Assessment</p>
-                  <h2 className="text-2xl font-bold">{getRiskStyles(result.overallRisk).label}</h2>
+                  <p className="text-sm uppercase tracking-wider text-white/50 mb-2">Risk Assessment</p>
+                  <h2 className={`text-3xl font-bold ${getRiskStyles(result.overallRisk).text}`}>
+                    {result.overallRisk.charAt(0).toUpperCase() + result.overallRisk.slice(1)} Risk
+                  </h2>
                 </div>
-                <div className={`text-5xl font-bold ${getRiskStyles(result.overallRisk).text}`}>
-                  {result.overallRisk.toUpperCase()}
+                {/* Visual Risk Meter */}
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex gap-1">
+                    {['low', 'medium', 'high', 'critical'].map((level) => (
+                      <div
+                        key={level}
+                        className={`w-8 h-8 rounded-lg transition-all ${
+                          getRiskMeterFill(result.overallRisk, level)
+                            ? getRiskMeterColor(result.overallRisk)
+                            : 'bg-white/10'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-white/40">
+                    {result.redFlags.length} issue{result.redFlags.length !== 1 ? 's' : ''} found
+                  </span>
                 </div>
+              </div>
+              {/* Summary inside risk box */}
+              <div className="pt-6 border-t border-white/10">
+                <p className="text-lg text-white/80 leading-relaxed">{result.summary}</p>
               </div>
             </div>
 
-            {/* Summary */}
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 mb-6">
-              <h3 className="text-sm uppercase tracking-wider text-white/50 mb-4">Summary</h3>
-              <p className="text-lg text-white/80 leading-relaxed">{result.summary}</p>
-            </div>
-
-            {/* Red Flags */}
-            {result.redFlags.length > 0 && (
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 mb-6">
-                <h3 className="text-sm uppercase tracking-wider text-white/50 mb-6">
-                  Red Flags ({result.redFlags.length})
-                </h3>
-                <div className="space-y-4">
-                  {result.redFlags.map((flag, index) => (
-                    <RedFlagCard key={index} flag={flag} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Key Terms */}
+            {/* Key Terms - Moved up */}
             <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 mb-6">
               <h3 className="text-sm uppercase tracking-wider text-white/50 mb-6">Key Terms</h3>
               <div className="grid gap-4">
@@ -626,34 +619,15 @@ function HomeContent() {
               </div>
             </div>
 
-            {/* Suggested Redlines */}
-            {result.suggestedRedlines && result.suggestedRedlines.length > 0 && (
+            {/* Red Flags - Sorted by severity */}
+            {result.redFlags.length > 0 && (
               <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 mb-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-sm uppercase tracking-wider text-white/50 mb-1">
-                      Suggested Revisions
-                    </h3>
-                    <p className="text-white/30 text-sm">{result.suggestedRedlines.length} changes recommended</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      copyAllRedlines(result.suggestedRedlines)
-                      setCopiedAll(true)
-                      setTimeout(() => setCopiedAll(false), 2000)
-                    }}
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
-                      copiedAll
-                        ? 'bg-green-500 text-white'
-                        : 'bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {copiedAll ? 'Copied!' : 'Copy All'}
-                  </button>
-                </div>
+                <h3 className="text-sm uppercase tracking-wider text-white/50 mb-6">
+                  Issues to Address ({result.redFlags.length})
+                </h3>
                 <div className="space-y-4">
-                  {result.suggestedRedlines.map((redline, index) => (
-                    <RedlineCard key={index} redline={redline} index={index} />
+                  {sortRedFlagsBySeverity(result.redFlags).map((flag, index) => (
+                    <RedFlagCard key={index} flag={flag} />
                   ))}
                 </div>
               </div>
@@ -754,64 +728,6 @@ function RedFlagCard({ flag }: { flag: RedFlag }) {
   )
 }
 
-function RedlineCard({ redline, index }: { redline: SuggestedRedline; index: number }) {
-  const [copied, setCopied] = useState(false)
-
-  const priorityConfig: Record<string, { label: string; color: string }> = {
-    must_change: { label: 'MUST CHANGE', color: 'text-red-400 bg-red-500/20' },
-    should_change: { label: 'SHOULD CHANGE', color: 'text-orange-400 bg-orange-500/20' },
-    consider: { label: 'CONSIDER', color: 'text-blue-400 bg-blue-500/20' },
-  }
-
-  const config = priorityConfig[redline.priority] || priorityConfig.consider
-
-  const copyRedline = async () => {
-    const text = `ORIGINAL:\n${redline.original}\n\nREVISED:\n${redline.revised}\n\nREASON: ${redline.explanation}`
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 bg-white/[0.02] border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <span className="text-white/30 text-sm">#{index + 1}</span>
-          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${config.color}`}>
-            {config.label}
-          </span>
-        </div>
-        <button
-          onClick={copyRedline}
-          className="text-sm text-white/40 hover:text-white transition-colors"
-        >
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-      <div className="p-5">
-        <div className="p-4 bg-black/30 rounded-lg border-l-2 border-white/10">
-          <span className="line-through text-red-400/80">{redline.original}</span>
-          <span className="mx-2 text-white/20">&rarr;</span>
-          <span className="text-green-400/80">{redline.revised}</span>
-        </div>
-        <p className="mt-4 text-sm text-white/50">{redline.explanation}</p>
-      </div>
-    </div>
-  )
-}
-
-function copyAllRedlines(redlines: SuggestedRedline[]) {
-  const text = redlines.map((r, i) => {
-    const labels: Record<string, string> = {
-      must_change: 'MUST CHANGE',
-      should_change: 'SHOULD CHANGE',
-      consider: 'CONSIDER',
-    }
-    return `--- CHANGE ${i + 1} [${labels[r.priority] || 'CONSIDER'}] ---\n\nORIGINAL:\n${r.original}\n\nREVISED:\n${r.revised}\n\nREASON: ${r.explanation}`
-  }).join('\n\n')
-  navigator.clipboard.writeText(text)
-}
-
 function getRiskStyles(risk: string) {
   const styles: Record<string, { bg: string; text: string; label: string }> = {
     low: {
@@ -836,6 +752,33 @@ function getRiskStyles(risk: string) {
     },
   }
   return styles[risk] || styles.medium
+}
+
+function getRiskMeterFill(currentRisk: string, level: string): boolean {
+  const order = ['low', 'medium', 'high', 'critical']
+  const currentIndex = order.indexOf(currentRisk)
+  const levelIndex = order.indexOf(level)
+  return levelIndex <= currentIndex
+}
+
+function getRiskMeterColor(risk: string): string {
+  const colors: Record<string, string> = {
+    low: 'bg-green-500',
+    medium: 'bg-yellow-500',
+    high: 'bg-orange-500',
+    critical: 'bg-red-500',
+  }
+  return colors[risk] || colors.medium
+}
+
+function sortRedFlagsBySeverity(flags: RedFlag[]): RedFlag[] {
+  const severityOrder: Record<string, number> = {
+    critical: 0,
+    high: 1,
+    medium: 2,
+    low: 3,
+  }
+  return [...flags].sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
 }
 
 function LoadingState() {
