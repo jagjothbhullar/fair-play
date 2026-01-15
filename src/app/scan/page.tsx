@@ -137,7 +137,7 @@ export default function PublicScanPage() {
         throw new Error('Please provide a file or paste contract text')
       }
 
-      const response = await fetch('/api/contracts/scan', {
+      const response = await fetch('/api/scan', {
         method: 'POST',
         body: formData,
       })
