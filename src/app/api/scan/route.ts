@@ -171,9 +171,9 @@ export async function POST(request: NextRequest) {
             summary: result.summary,
             overallRisk: result.overallRisk,
             redFlagsCount: result.redFlags.length,
-            redFlags: result.redFlags,
-            keyTerms: result.keyTerms,
-            suggestedRedlines: result.suggestedRedlines || null,
+            redFlags: JSON.parse(JSON.stringify(result.redFlags)),
+            keyTerms: JSON.parse(JSON.stringify(result.keyTerms)),
+            suggestedRedlines: result.suggestedRedlines ? JSON.parse(JSON.stringify(result.suggestedRedlines)) : null,
           },
         })
       } catch (err) {
