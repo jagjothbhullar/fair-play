@@ -100,6 +100,21 @@ export default function WaterCoolerPage() {
         </p>
       </div>
 
+      {/* Start a Discussion CTA */}
+      <div className="mb-8 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-white/10 rounded-2xl p-6 flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold mb-1">Start a discussion</h3>
+          <p className="text-white/50 text-sm">
+            Share your experiences and get advice from verified athletes.
+          </p>
+        </div>
+        <button
+          className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-xl font-semibold hover:from-emerald-300 hover:to-emerald-400 transition-all"
+        >
+          Create Post
+        </button>
+      </div>
+
       {/* Categories */}
       <div className="flex flex-wrap gap-2 mb-8">
         {categories.map((cat) => (
@@ -239,20 +254,6 @@ export default function WaterCoolerPage() {
         )}
       </div>
 
-      {/* CTA */}
-      <div className="mt-16 text-center">
-        <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-white/10 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold mb-3">Start a discussion</h3>
-          <p className="text-white/50 mb-6">
-            Share your experiences and get advice from verified athletes.
-          </p>
-          <button
-            className="inline-flex px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-full font-semibold hover:from-emerald-300 hover:to-emerald-400"
-          >
-            Create Post
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

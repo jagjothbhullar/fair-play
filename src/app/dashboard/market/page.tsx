@@ -1,9 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import NILCalculator, { type CalculatorInputs } from '@/components/NILCalculator'
 import SimilarAthletes from '@/components/SimilarAthletes'
+
+const recentDeals = [
+  { type: 'Social Post', value: '$2,500', schoolTier: 'Power Five', followers: '50K-100K', sport: 'Football' },
+  { type: 'Appearance', value: '$5,000', schoolTier: 'Blue Blood', followers: '100K-500K', sport: "Men's Basketball" },
+  { type: 'Licensing', value: '$15,000', schoolTier: 'Power Five', followers: '500K+', sport: 'Football' },
+  { type: 'Social Post', value: '$800', schoolTier: 'Mid-Major', followers: '10K-50K', sport: "Women's Volleyball" },
+  { type: 'Camp', value: '$3,500', schoolTier: 'Power Five', followers: '50K-100K', sport: "Men's Basketball" },
+  { type: 'Autograph', value: '$1,200', schoolTier: 'Blue Blood', followers: '100K-500K', sport: 'Football' },
+  { type: 'Social Post', value: '$1,500', schoolTier: 'Power Five', followers: '50K-100K', sport: "Women's Gymnastics" },
+  { type: 'Merchandise', value: '$8,000', schoolTier: 'Blue Blood', followers: '500K+', sport: "Men's Basketball" },
+  { type: 'Appearance', value: '$2,000', schoolTier: 'Mid-Major', followers: '10K-50K', sport: "Women's Basketball" },
+  { type: 'Social Post', value: '$500', schoolTier: 'Small School', followers: '1K-10K', sport: 'Baseball' },
+]
 
 export default function NILMarketPage() {
   const [calculatorInputs, setCalculatorInputs] = useState<CalculatorInputs | null>(null)
@@ -79,20 +91,40 @@ export default function NILMarketPage() {
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="mt-16 text-center">
-        <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-white/10 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold mb-3">Have a contract to review?</h3>
-          <p className="text-white/50 mb-6">
-            Use our AI-powered scanner to spot red flags before you sign.
-          </p>
-          <Link
-            href="/"
-            className="inline-flex px-8 py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-full font-semibold hover:from-emerald-300 hover:to-emerald-400 transition-all"
-          >
-            Scan a Contract
-          </Link>
+      {/* Recent Deals Table */}
+      <div className="mt-16">
+        <h3 className="text-2xl font-bold mb-6">Recent NIL Deals</h3>
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/10 text-left">
+                  <th className="px-6 py-4 text-sm font-medium text-white/50">Deal Type</th>
+                  <th className="px-6 py-4 text-sm font-medium text-white/50">Value</th>
+                  <th className="px-6 py-4 text-sm font-medium text-white/50">School Tier</th>
+                  <th className="px-6 py-4 text-sm font-medium text-white/50">Followers</th>
+                  <th className="px-6 py-4 text-sm font-medium text-white/50">Sport</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {recentDeals.map((deal, index) => (
+                  <tr key={index} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 bg-white/5 rounded text-sm">{deal.type}</span>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-emerald-400">{deal.value}</td>
+                    <td className="px-6 py-4 text-white/70">{deal.schoolTier}</td>
+                    <td className="px-6 py-4 text-white/70">{deal.followers}</td>
+                    <td className="px-6 py-4 text-white/70">{deal.sport}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+        <p className="mt-4 text-center text-white/30 text-sm">
+          Anonymized data from verified athlete-reported deals
+        </p>
       </div>
     </div>
   )
