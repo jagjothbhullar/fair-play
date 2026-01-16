@@ -231,24 +231,18 @@ function HomeContent() {
               </>
             ) : (
               <>
-                <button
-                  onClick={() => {
-                    setAuthModalMode('signin')
-                    setAuthModalOpen(true)
-                  }}
+                <Link
+                  href="/login"
                   className="px-5 py-2.5 text-sm text-white/70 hover:text-white transition-colors"
                 >
                   Sign In
-                </button>
-                <button
-                  onClick={() => {
-                    setAuthModalMode('signup')
-                    setAuthModalOpen(true)
-                  }}
+                </Link>
+                <Link
+                  href="/signup"
                   className="px-5 py-2.5 text-sm bg-white text-black rounded-full font-medium hover:bg-white/90 transition-colors"
                 >
                   Create Account
-                </button>
+                </Link>
               </>
             )}
           </nav>
