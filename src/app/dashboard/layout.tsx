@@ -36,8 +36,11 @@ export default function DashboardLayout({
         const response = await fetch(`/api/profile?userId=${user.id}`)
         const data = await response.json()
         if (!data.hasProfile) {
-          // Show profile setup modal instead of redirecting
-          setShowProfileModal(true)
+          // Check if user has previously dismissed the modal
+          const dismissed = localStorage.getItem(`profile_setup_dismissed_${user.id}`)
+          if (!dismissed) {
+            setShowProfileModal(true)
+          }
         }
       } catch (e) {
         console.error('Profile check error:', e)
@@ -220,6 +223,10 @@ export default function DashboardLayout({
           onComplete={() => {
             setShowProfileModal(false)
             router.refresh()
+          }}
+          onSkip={() => {
+            localStorage.setItem(`profile_setup_dismissed_${user.id}`, 'true')
+            setShowProfileModal(false)
           }}
         />
       )}

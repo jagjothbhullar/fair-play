@@ -38,9 +38,10 @@ interface ProfileSetupModalProps {
   userId: string
   userEmail: string
   onComplete: () => void
+  onSkip: () => void
 }
 
-export default function ProfileSetupModal({ userId, userEmail, onComplete }: ProfileSetupModalProps) {
+export default function ProfileSetupModal({ userId, userEmail, onComplete, onSkip }: ProfileSetupModalProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -276,7 +277,7 @@ export default function ProfileSetupModal({ userId, userEmail, onComplete }: Pro
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 space-y-3">
           <button
             onClick={handleSubmit}
             disabled={saving}
@@ -293,6 +294,12 @@ export default function ProfileSetupModal({ userId, userEmail, onComplete }: Pro
             ) : (
               "Complete Setup"
             )}
+          </button>
+          <button
+            onClick={onSkip}
+            className="w-full py-2.5 text-white/50 hover:text-white/70 text-sm transition-colors"
+          >
+            Set up later
           </button>
         </div>
       </div>
