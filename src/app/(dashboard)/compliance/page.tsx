@@ -237,14 +237,22 @@ function RulesSection({
 
 function SeverityBadge({ severity }: { severity: string }) {
   const colors: Record<string, string> = {
-    ERROR: 'bg-red-100 text-red-700',
-    WARNING: 'bg-yellow-100 text-yellow-700',
-    INFO: 'bg-blue-100 text-blue-700',
+    CRITICAL: 'bg-red-100 text-red-700',
+    HIGH: 'bg-orange-100 text-orange-700',
+    MEDIUM: 'bg-yellow-100 text-yellow-700',
+    LOW: 'bg-blue-100 text-blue-700',
+  }
+
+  const labels: Record<string, string> = {
+    CRITICAL: 'Required',
+    HIGH: 'Important',
+    MEDIUM: 'Recommended',
+    LOW: 'Info',
   }
 
   return (
-    <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[severity] || colors.INFO}`}>
-      {severity === 'ERROR' ? 'Required' : severity === 'WARNING' ? 'Important' : 'Info'}
+    <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[severity] || colors.MEDIUM}`}>
+      {labels[severity] || severity}
     </span>
   )
 }
