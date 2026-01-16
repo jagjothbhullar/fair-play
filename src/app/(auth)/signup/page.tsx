@@ -4,39 +4,54 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { californiaSchools } from '@/lib/data/california-schools'
 
-const SCHOOLS = [
-  { id: 'stanford', name: 'Stanford University' },
-  { id: 'cal', name: 'UC Berkeley' },
-  { id: 'sjsu', name: 'San Jose State University' },
-  { id: 'santaclara', name: 'Santa Clara University' },
+const sports = [
+  'Football',
+  "Men's Basketball",
+  "Women's Basketball",
+  "Women's Gymnastics",
+  "Women's Volleyball",
+  'Baseball',
+  'Softball',
+  'Track and Field',
+  "Men's Soccer",
+  "Women's Soccer",
+  'Swimming and Diving',
+  "Men's Tennis",
+  "Women's Tennis",
+  "Men's Golf",
+  "Women's Golf",
+  'Wrestling',
+  "Men's Volleyball",
+  "Water Polo",
+  'Rowing',
+  'Beach Volleyball',
 ]
 
-const SPORTS = [
-  { id: 'mens-basketball', name: "Men's Basketball" },
-  { id: 'womens-basketball', name: "Women's Basketball" },
-  { id: 'football', name: 'Football' },
-  { id: 'mens-soccer', name: "Men's Soccer" },
-  { id: 'womens-soccer', name: "Women's Soccer" },
-  { id: 'baseball', name: 'Baseball' },
-  { id: 'softball', name: 'Softball' },
-  { id: 'mens-volleyball', name: "Men's Volleyball" },
-  { id: 'womens-volleyball', name: "Women's Volleyball" },
-  { id: 'other', name: 'Other' },
+const classYears = [
+  { value: 'Freshman', label: 'Freshman' },
+  { value: 'Sophomore', label: 'Sophomore' },
+  { value: 'Junior', label: 'Junior' },
+  { value: 'Senior', label: 'Senior' },
+  { value: 'Grad', label: 'Graduate Student' },
 ]
 
 export default function SignupPage() {
-  const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [school, setSchool] = useState('')
+  const [schoolShortName, setSchoolShortName] = useState('')
   const [sport, setSport] = useState('')
+  const [classYear, setClassYear] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
   const router = useRouter()
   const supabase = createClient()
+
+  const selectedSchool = californiaSchools.find(s => s.shortName === schoolShortName)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,7 +59,7 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      // Create auth user
+      // Create auth user with Supabase
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -52,13 +67,35 @@ export default function SignupPage() {
           data: {
             firstName,
             lastName,
-            school,
+            schoolShortName,
             sport,
+            classYear,
           },
         },
       })
 
       if (authError) throw authError
+
+      // Create profile in our database
+      if (authData.user) {
+        const profileResponse = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            firstName,
+            lastName,
+            email,
+            schoolShortName,
+            sport,
+            classYear,
+          }),
+        })
+
+        if (!profileResponse.ok) {
+          console.error('Failed to create profile')
+        }
+      }
 
       // Redirect to dashboard
       router.push('/dashboard')
@@ -71,190 +108,213 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-white">
-            Fair Play
+    <div className="min-h-screen bg-black text-white">
+      {/* Background effects */}
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
+      <div className="fixed top-0 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none" />
+
+      {/* Header */}
+      <header className="relative z-10 border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-6 py-5">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+              <span className="text-black font-bold text-lg">FP</span>
+            </div>
+            <span className="text-xl font-semibold tracking-tight">Fair Play</span>
           </Link>
-          <h1 className="text-xl text-slate-300 mt-2">Create your account</h1>
+        </div>
+      </header>
+
+      <main className="relative z-10 max-w-xl mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-3">Create Your Account</h1>
+          <p className="text-white/50">
+            Join Fair Play to protect your NIL deals and connect with other athletes.
+          </p>
         </div>
 
-        {/* Progress indicator */}
-        <div className="flex justify-center gap-2 mb-8">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className={`w-3 h-3 rounded-full ${
-                s <= step ? 'bg-blue-500' : 'bg-slate-600'
-              }`}
-            />
-          ))}
-        </div>
-
-        <form onSubmit={handleSubmit} className="bg-slate-800 rounded-xl p-8 border border-slate-700">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 md:p-8">
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          {step === 1 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium text-white mb-4">Your Information</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
-                  />
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                disabled={!firstName || !lastName}
-                className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+          {/* Name */}
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm text-white/50 mb-2">First Name *</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                placeholder="John"
+                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-2">Last Name *</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                placeholder="Doe"
+                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50"
+              />
+            </div>
+          </div>
+
+          {/* School */}
+          <div className="mb-6">
+            <label className="block text-sm text-white/50 mb-2">School *</label>
+            <select
+              value={schoolShortName}
+              onChange={(e) => setSchoolShortName(e.target.value)}
+              required
+              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
+            >
+              <option value="">Select your school</option>
+              <optgroup label="Power Four">
+                {californiaSchools
+                  .filter(s => s.conferenceType === 'POWER_FOUR')
+                  .map(school => (
+                    <option key={school.shortName} value={school.shortName}>
+                      {school.name}
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="Group of Five">
+                {californiaSchools
+                  .filter(s => s.conferenceType === 'GROUP_OF_FIVE')
+                  .map(school => (
+                    <option key={school.shortName} value={school.shortName}>
+                      {school.name}
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="Mid-Major">
+                {californiaSchools
+                  .filter(s => s.conferenceType === 'MID_MAJOR')
+                  .map(school => (
+                    <option key={school.shortName} value={school.shortName}>
+                      {school.name}
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="FCS">
+                {californiaSchools
+                  .filter(s => s.conferenceType === 'FCS')
+                  .map(school => (
+                    <option key={school.shortName} value={school.shortName}>
+                      {school.name}
+                    </option>
+                  ))}
+              </optgroup>
+            </select>
+            {selectedSchool && (
+              <p className="mt-2 text-sm text-emerald-400/70">
+                {selectedSchool.conference} | {selectedSchool.nilTier} NIL Activity
+              </p>
+            )}
+          </div>
+
+          {/* Sport & Class Year */}
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm text-white/50 mb-2">Sport *</label>
+              <select
+                value={sport}
+                onChange={(e) => setSport(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
               >
-                Continue
-              </button>
+                <option value="">Select your sport</option>
+                {sports.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
             </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium text-white mb-4">Your School & Sport</h2>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  School
-                </label>
-                <select
-                  value={school}
-                  onChange={(e) => setSchool(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
-                >
-                  <option value="">Select your school</option>
-                  {SCHOOLS.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Sport
-                </label>
-                <select
-                  value={sport}
-                  onChange={(e) => setSport(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
-                >
-                  <option value="">Select your sport</option>
-                  {SPORTS.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="flex-1 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600"
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  disabled={!school || !sport}
-                  className="flex-1 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50"
-                >
-                  Continue
-                </button>
-              </div>
+            <div>
+              <label className="block text-sm text-white/50 mb-2">Class Year *</label>
+              <select
+                value={classYear}
+                onChange={(e) => setClassYear(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
+              >
+                <option value="">Select year</option>
+                {classYears.map(year => (
+                  <option key={year.value} value={year.value}>{year.label}</option>
+                ))}
+              </select>
             </div>
-          )}
+          </div>
 
-          {step === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium text-white mb-4">Create Account</h2>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
-                  placeholder="you@school.edu"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
-                  placeholder="At least 8 characters"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="flex-1 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading || !email || !password}
-                  className="flex-1 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50"
-                >
-                  {loading ? 'Creating...' : 'Create Account'}
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Email */}
+          <div className="mb-6">
+            <label className="block text-sm text-white/50 mb-2">Email *</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="you@school.edu"
+              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50"
+            />
+          </div>
 
-          <p className="mt-6 text-center text-slate-400 text-sm">
+          {/* Password */}
+          <div className="mb-8">
+            <label className="block text-sm text-white/50 mb-2">Password *</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+              placeholder="At least 8 characters"
+              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50"
+            />
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading || !firstName || !lastName || !schoolShortName || !sport || !classYear || !email || !password}
+            className="w-full py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-xl font-semibold text-lg hover:from-emerald-300 hover:to-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Creating Account...
+              </span>
+            ) : (
+              'Create Account'
+            )}
+          </button>
+
+          <p className="mt-6 text-center text-white/40 text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="text-blue-400 hover:text-blue-300">
-              Log in
+            <Link href="/login" className="text-emerald-400 hover:text-emerald-300">
+              Sign in
             </Link>
           </p>
         </form>
-      </div>
+
+        <p className="mt-6 text-center text-white/30 text-xs">
+          By creating an account, you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-white/50">Terms</Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="underline hover:text-white/50">Privacy Policy</Link>
+        </p>
+      </main>
     </div>
   )
 }
