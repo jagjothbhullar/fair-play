@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import AuthModal from '@/components/AuthModal'
 import type { User } from '@supabase/supabase-js'
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null)
+  const [showSignInModal, setShowSignInModal] = useState(false)
   const supabase = createClient()
   const router = useRouter()
 
@@ -28,12 +30,12 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <span className="text-xl font-semibold tracking-tight">Fair Play</span>
           {!user && (
-            <Link
-              href="/login"
+            <button
+              onClick={() => setShowSignInModal(true)}
               className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
             >
               Sign In
-            </Link>
+            </button>
           )}
         </div>
       </header>
@@ -131,9 +133,12 @@ export default function HomePage() {
             <div className="mt-4 bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-center">
               <p className="text-white/40 text-sm">
                 Already have an account?{' '}
-                <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                <button
+                  onClick={() => setShowSignInModal(true)}
+                  className="text-emerald-400 hover:text-emerald-300 font-medium"
+                >
                   Sign in
-                </Link>
+                </button>
               </p>
             </div>
 
@@ -160,6 +165,17 @@ export default function HomePage() {
           Built for California D1 athletes. Trusted by student athletes nationwide.
         </p>
       </main>
+
+      {/* Sign In Modal */}
+      <AuthModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+        onSuccess={() => {
+          setShowSignInModal(false)
+          router.push('/dashboard')
+        }}
+        defaultMode="signin"
+      />
     </div>
   )
 }
