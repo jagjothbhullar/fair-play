@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import ProfileSetupModal from '@/components/ProfileSetupModal'
 import type { User } from '@supabase/supabase-js'
 
 export default function DashboardLayout({
@@ -13,6 +14,7 @@ export default function DashboardLayout({
 }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showProfileModal, setShowProfileModal] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -25,19 +27,20 @@ export default function DashboardLayout({
         return
       }
 
+      setUser(user)
+
       // Check if user has a profile
       try {
         const response = await fetch(`/api/profile?userId=${user.id}`)
         const data = await response.json()
         if (!data.hasProfile) {
-          router.push('/profile/setup')
-          return
+          // Show profile setup modal instead of redirecting
+          setShowProfileModal(true)
         }
       } catch (e) {
         console.error('Profile check error:', e)
       }
 
-      setUser(user)
       setLoading(false)
     }
     checkAuth()
@@ -149,6 +152,18 @@ export default function DashboardLayout({
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 pb-24 lg:pb-8">
         {children}
       </main>
+
+      {/* Profile Setup Modal */}
+      {showProfileModal && user && (
+        <ProfileSetupModal
+          userId={user.id}
+          userEmail={user.email || ''}
+          onComplete={() => {
+            setShowProfileModal(false)
+            router.refresh()
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -4,54 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { californiaSchools } from '@/lib/data/california-schools'
-
-const sports = [
-  'Football',
-  "Men's Basketball",
-  "Women's Basketball",
-  "Women's Gymnastics",
-  "Women's Volleyball",
-  'Baseball',
-  'Softball',
-  'Track and Field',
-  "Men's Soccer",
-  "Women's Soccer",
-  'Swimming and Diving',
-  "Men's Tennis",
-  "Women's Tennis",
-  "Men's Golf",
-  "Women's Golf",
-  'Wrestling',
-  "Men's Volleyball",
-  "Water Polo",
-  'Rowing',
-  'Beach Volleyball',
-]
-
-const classYears = [
-  { value: 'Freshman', label: 'Freshman' },
-  { value: 'Sophomore', label: 'Sophomore' },
-  { value: 'Junior', label: 'Junior' },
-  { value: 'Senior', label: 'Senior' },
-  { value: 'Grad', label: 'Graduate Student' },
-]
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [schoolShortName, setSchoolShortName] = useState('')
-  const [sport, setSport] = useState('')
-  const [classYear, setClassYear] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
-
-  const selectedSchool = californiaSchools.find(s => s.shortName === schoolShortName)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -59,47 +20,27 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      // Create auth user with Supabase
+      // Create auth user with Supabase (email confirmation disabled in dashboard)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          // emailRedirectTo not needed since we disabled email confirmation
           data: {
-            firstName,
-            lastName,
-            schoolShortName,
-            sport,
-            classYear,
+            signup_source: 'web',
           },
         },
       })
 
       if (authError) throw authError
 
-      // Create profile in our database
+      // Check if user was created (not just returned existing)
       if (authData.user) {
-        const profileResponse = await fetch('/api/profile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: authData.user.id,
-            firstName,
-            lastName,
-            email,
-            schoolShortName,
-            sport,
-            classYear,
-          }),
-        })
-
-        if (!profileResponse.ok) {
-          console.error('Failed to create profile')
-        }
+        // User is now signed in automatically (since email confirmation is disabled)
+        // Redirect to dashboard - the profile popup will handle profile setup
+        router.push('/dashboard')
+        router.refresh()
       }
-
-      // Redirect to dashboard
-      router.push('/dashboard')
-      router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -125,12 +66,17 @@ export default function SignupPage() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-xl mx-auto px-6 py-12">
+      <main className="relative z-10 max-w-md mx-auto px-6 py-16">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center">
+            <svg className="w-8 h-8 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
           <h1 className="text-3xl font-bold mb-3">Create Your Account</h1>
           <p className="text-white/50">
-            Join Fair Play to protect your NIL deals and connect with other athletes.
+            Join thousands of athletes protecting their NIL deals.
           </p>
         </div>
 
@@ -142,121 +88,9 @@ export default function SignupPage() {
             </div>
           )}
 
-          {/* Name */}
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-sm text-white/50 mb-2">First Name *</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                placeholder="John"
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-white/50 mb-2">Last Name *</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-                placeholder="Doe"
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/50"
-              />
-            </div>
-          </div>
-
-          {/* School */}
-          <div className="mb-6">
-            <label className="block text-sm text-white/50 mb-2">School *</label>
-            <select
-              value={schoolShortName}
-              onChange={(e) => setSchoolShortName(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
-            >
-              <option value="">Select your school</option>
-              <optgroup label="Power Four">
-                {californiaSchools
-                  .filter(s => s.conferenceType === 'POWER_FOUR')
-                  .map(school => (
-                    <option key={school.shortName} value={school.shortName}>
-                      {school.name}
-                    </option>
-                  ))}
-              </optgroup>
-              <optgroup label="Group of Five">
-                {californiaSchools
-                  .filter(s => s.conferenceType === 'GROUP_OF_FIVE')
-                  .map(school => (
-                    <option key={school.shortName} value={school.shortName}>
-                      {school.name}
-                    </option>
-                  ))}
-              </optgroup>
-              <optgroup label="Mid-Major">
-                {californiaSchools
-                  .filter(s => s.conferenceType === 'MID_MAJOR')
-                  .map(school => (
-                    <option key={school.shortName} value={school.shortName}>
-                      {school.name}
-                    </option>
-                  ))}
-              </optgroup>
-              <optgroup label="FCS">
-                {californiaSchools
-                  .filter(s => s.conferenceType === 'FCS')
-                  .map(school => (
-                    <option key={school.shortName} value={school.shortName}>
-                      {school.name}
-                    </option>
-                  ))}
-              </optgroup>
-            </select>
-            {selectedSchool && (
-              <p className="mt-2 text-sm text-emerald-400/70">
-                {selectedSchool.conference} | {selectedSchool.nilTier} NIL Activity
-              </p>
-            )}
-          </div>
-
-          {/* Sport & Class Year */}
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-sm text-white/50 mb-2">Sport *</label>
-              <select
-                value={sport}
-                onChange={(e) => setSport(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
-              >
-                <option value="">Select your sport</option>
-                {sports.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-white/50 mb-2">Class Year *</label>
-              <select
-                value={classYear}
-                onChange={(e) => setClassYear(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:border-emerald-400/50"
-              >
-                <option value="">Select year</option>
-                {classYears.map(year => (
-                  <option key={year.value} value={year.value}>{year.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           {/* Email */}
-          <div className="mb-6">
-            <label className="block text-sm text-white/50 mb-2">Email *</label>
+          <div className="mb-5">
+            <label className="block text-sm text-white/50 mb-2">Email</label>
             <input
               type="email"
               value={email}
@@ -269,7 +103,7 @@ export default function SignupPage() {
 
           {/* Password */}
           <div className="mb-8">
-            <label className="block text-sm text-white/50 mb-2">Password *</label>
+            <label className="block text-sm text-white/50 mb-2">Password</label>
             <input
               type="password"
               value={password}
@@ -284,7 +118,7 @@ export default function SignupPage() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={loading || !firstName || !lastName || !schoolShortName || !sport || !classYear || !email || !password}
+            disabled={loading || !email || !password}
             className="w-full py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-black rounded-xl font-semibold text-lg hover:from-emerald-300 hover:to-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading ? (
