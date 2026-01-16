@@ -114,7 +114,7 @@ export default function DashboardLayout({
           {/* User Menu */}
           <div className="flex items-center gap-4">
             <Link
-              href="/scan"
+              href="/dashboard/scan"
               className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-black rounded-lg text-sm font-medium hover:bg-emerald-400 transition-colors"
             >
               <ScanIcon className="w-4 h-4" />
