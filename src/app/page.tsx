@@ -25,13 +25,8 @@ export default function HomePage() {
 
       {/* Header */}
       <header className="relative z-10 border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-lg">FP</span>
-            </div>
-            <span className="text-xl font-semibold tracking-tight">Fair Play</span>
-          </div>
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+          <span className="text-xl font-semibold tracking-tight">Fair Play</span>
           {!user && (
             <Link
               href="/login"
