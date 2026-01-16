@@ -368,9 +368,9 @@ export default function DashboardScanPage() {
           </div>
         )}
 
-        {/* AI Assistant */}
+        {/* Ask Ari */}
         <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Ask Questions About Your Contract</h2>
+          <h2 className="text-lg font-semibold mb-4">Ask Ari About Your Contract</h2>
           <AssistantChat scanContext={{
             summary: result.summary,
             overallRisk: result.overallRisk,

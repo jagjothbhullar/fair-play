@@ -99,7 +99,7 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
       <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
         {!isOpen && (
           <div className="bg-zinc-800 border border-white/10 text-white text-sm px-4 py-2 rounded-full shadow-lg animate-in fade-in slide-in-from-right-2 duration-300">
-            Ask a quick question
+            Ask Ari
           </div>
         )}
         <button
@@ -129,13 +129,11 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
           <div className="px-5 py-4 border-b border-white/10 bg-white/[0.02]">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-                <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <span className="text-black font-bold text-sm">A</span>
               </div>
               <div>
-                <h3 className="font-semibold text-white text-sm">Quick Question</h3>
-                <p className="text-white/40 text-xs">Ask about contracts, rates & deals</p>
+                <h3 className="font-semibold text-white text-sm">Ask Ari</h3>
+                <p className="text-white/40 text-xs">Your personal NIL guide</p>
               </div>
             </div>
           </div>
@@ -145,7 +143,7 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
             {messages.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-white/40 text-sm mb-4">
-                  Ask me anything about contracts, rates, or deals.
+                  I can help you understand contracts, rates, and deals.
                 </p>
                 <div className="space-y-2">
                   {QUICK_PROMPTS.map((prompt, index) => (
@@ -212,7 +210,7 @@ export default function AssistantChat({ scanContext }: AssistantChatProps) {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={isLimitReached ? "Message limit reached" : "Ask a quick question..."}
+                placeholder={isLimitReached ? "Message limit reached" : "Ask Ari anything..."}
                 disabled={isLoading || isLimitReached}
                 className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:border-emerald-400/50 disabled:opacity-50"
               />
