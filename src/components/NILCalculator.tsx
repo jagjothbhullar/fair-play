@@ -10,6 +10,11 @@ interface CalculatorResult {
     high: number
     ceiling: number
   }
+  annualValue: {
+    low: number
+    median: number
+    high: number
+  }
   comparableDeals: number
   confidence: 'high' | 'medium' | 'low'
   multipliers: {
@@ -117,6 +122,45 @@ const baseDealValues: Record<string, { low: number; median: number; high: number
   'Other': { low: 400, median: 1200, high: 3000 },
 }
 
+// Annual NIL value base estimates by follower tier (based on On3 NIL valuations)
+function getFollowerAnnualBase(tier: string): { low: number; median: number; high: number } {
+  const bases: Record<string, { low: number; median: number; high: number }> = {
+    'under_1k': { low: 500, median: 2000, high: 5000 },
+    '1k_10k': { low: 2000, median: 8000, high: 20000 },
+    '10k_50k': { low: 10000, median: 35000, high: 75000 },
+    '50k_100k': { low: 30000, median: 75000, high: 150000 },
+    '100k_500k': { low: 75000, median: 200000, high: 500000 },
+    '500k_1m': { low: 200000, median: 500000, high: 1200000 },
+    '1m_plus': { low: 500000, median: 1500000, high: 5000000 },
+  }
+  return bases[tier] || { low: 2000, median: 10000, high: 25000 }
+}
+
+// Sport multiplier for annual value (revenue sports = higher value)
+function getSportAnnualMultiplier(sport: string): number {
+  const multipliers: Record<string, number> = {
+    'Football': 1.5,
+    "Men's Basketball": 1.4,
+    "Women's Basketball": 1.2,
+    "Women's Gymnastics": 1.3, // High social media engagement
+    "Women's Volleyball": 1.1,
+    'Baseball': 0.9,
+    'Softball': 0.85,
+    'Track and Field': 0.7,
+    "Men's Soccer": 0.75,
+    "Women's Soccer": 0.8,
+    'Swimming and Diving': 0.7,
+    'Tennis': 0.75,
+    'Golf': 0.8,
+    'Wrestling': 0.65,
+    'Beach Volleyball': 0.9,
+    'Rowing': 0.5,
+    "Men's Volleyball": 0.7,
+    "Water Polo": 0.6,
+  }
+  return multipliers[sport] || 0.75
+}
+
 export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
   const [sport, setSport] = useState('')
   const [dealType, setDealType] = useState('')
@@ -180,6 +224,14 @@ export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
     // Get sport ceiling
     const ceiling = sportCeilings[sport] || 10000
 
+    // Calculate annual NIL value estimate based on followers + school + sport
+    // This estimates what an athlete could earn annually from all NIL activities
+    const followerAnnualBase = getFollowerAnnualBase(followerTier)
+    const sportAnnualMultiplier = getSportAnnualMultiplier(sport)
+    const annualLow = Math.round(followerAnnualBase.low * schoolMultiplier * sportAnnualMultiplier * transferMultiplier * agentMultiplier)
+    const annualMedian = Math.round(followerAnnualBase.median * schoolMultiplier * sportAnnualMultiplier * transferMultiplier * agentMultiplier)
+    const annualHigh = Math.round(followerAnnualBase.high * schoolMultiplier * sportAnnualMultiplier * transferMultiplier * agentMultiplier)
+
     // Determine confidence based on school type
     let confidence: 'high' | 'medium' | 'low' = 'medium'
     if (schoolInfo) {
@@ -209,6 +261,11 @@ export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
           median: estimatedMedian,
           high: estimatedHigh,
           ceiling: ceiling,
+        },
+        annualValue: {
+          low: annualLow,
+          median: annualMedian,
+          high: annualHigh,
         },
         comparableDeals: schoolInfo ? 150 : 50,
         confidence,
@@ -430,7 +487,7 @@ export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
         <div className="mt-6 pt-6 border-t border-white/10">
           {/* School Info */}
           {result.schoolInfo && (
-            <div className="mb-4 p-4 bg-black/20 rounded-xl">
+            <div className="mb-6 p-4 bg-black/20 rounded-xl">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white font-medium">{result.schoolInfo.name}</p>
@@ -443,17 +500,32 @@ export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
             </div>
           )}
 
-          {/* Value Range */}
-          <div className="text-center mb-6">
-            <p className="text-white/40 text-sm mb-2">Estimated Deal Value</p>
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-xl text-white/50">{formatCurrency(result.estimation.low)}</span>
-              <span className="text-white/30">-</span>
-              <span className="text-4xl font-bold text-emerald-400">{formatCurrency(result.estimation.median)}</span>
-              <span className="text-white/30">-</span>
-              <span className="text-xl text-white/50">{formatCurrency(result.estimation.high)}</span>
+          {/* ANNUAL NIL VALUE - Primary Result */}
+          <div className="mb-8 p-6 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl">
+            <div className="text-center">
+              <p className="text-emerald-400 text-sm font-medium mb-2">Your Estimated Annual NIL Value</p>
+              <div className="mb-4">
+                <span className="text-5xl md:text-6xl font-bold text-white">{formatCurrency(result.annualValue.median)}</span>
+                <span className="text-white/40 text-lg">/year</span>
+              </div>
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <span className="text-white/50">Low: {formatCurrency(result.annualValue.low)}</span>
+                <span className="text-white/20">|</span>
+                <span className="text-white/50">High: {formatCurrency(result.annualValue.high)}</span>
+              </div>
             </div>
-            <p className="text-white/30 text-xs mt-2">Low - Median - High</p>
+          </div>
+
+          {/* Per-Deal Value */}
+          <div className="mb-6 p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+            <p className="text-white/40 text-xs mb-3 text-center">Per-Deal Estimate ({dealType})</p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-lg text-white/50">{formatCurrency(result.estimation.low)}</span>
+              <span className="text-white/30">-</span>
+              <span className="text-2xl font-bold text-white">{formatCurrency(result.estimation.median)}</span>
+              <span className="text-white/30">-</span>
+              <span className="text-lg text-white/50">{formatCurrency(result.estimation.high)}</span>
+            </div>
           </div>
 
           {/* Sport Ceiling */}
@@ -502,8 +574,8 @@ export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
 
           {/* Disclaimer */}
           <p className="mt-4 text-white/30 text-xs text-center">
-            Based on CalMatters NIL Database, Opendorse Reports, and On3 Valuations.
-            Transfer premium (+70%) and agent representation (+430%) based on Opendorse research.
+            Based on CalMatters NIL Database, On3 NIL Valuations, and Opendorse Reports.
+            Annual value estimates total NIL earning potential across all deal types.
           </p>
         </div>
       )}
