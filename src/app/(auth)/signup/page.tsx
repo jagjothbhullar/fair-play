@@ -4,12 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import AuthModal from '@/components/AuthModal'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showSignInModal, setShowSignInModal] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
@@ -136,11 +138,25 @@ export default function SignupPage() {
 
           <p className="mt-6 text-center text-white/40 text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="text-emerald-400 hover:text-emerald-300">
+            <button
+              type="button"
+              onClick={() => setShowSignInModal(true)}
+              className="text-emerald-400 hover:text-emerald-300"
+            >
               Sign in
-            </Link>
+            </button>
           </p>
         </form>
+
+        <AuthModal
+          isOpen={showSignInModal}
+          onClose={() => setShowSignInModal(false)}
+          onSuccess={() => {
+            setShowSignInModal(false)
+            router.push('/dashboard')
+          }}
+          defaultMode="signin"
+        />
 
         <p className="mt-6 text-center text-white/30 text-xs">
           By creating an account, you agree to our{' '}

@@ -62,26 +62,34 @@ export default function HomePage() {
         {/* CTA Cards */}
         <div className="grid md:grid-cols-2 gap-4">
           {/* Create Account */}
-          <Link
-            href="/signup"
-            className="group bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-emerald-500/30 hover:bg-white/[0.05] transition-all"
-          >
-            <div className="w-12 h-12 mb-4 bg-emerald-500/10 rounded-xl flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
-              <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Create Account</h2>
-            <p className="text-white/50 text-sm mb-4">
-              Join thousands of athletes. Access NIL calculator, Water Cooler, and more.
+          <div className="flex flex-col">
+            <Link
+              href="/signup"
+              className="group bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-emerald-500/30 hover:bg-white/[0.05] transition-all"
+            >
+              <div className="w-12 h-12 mb-4 bg-emerald-500/10 rounded-xl flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
+                <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Create Account</h2>
+              <p className="text-white/50 text-sm mb-4">
+                Join thousands of athletes. Access NIL calculator, Water Cooler, and more.
+              </p>
+              <span className="inline-flex items-center gap-2 text-emerald-400 text-sm font-medium group-hover:gap-3 transition-all">
+                Get Started
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </Link>
+            <p className="text-center text-white/40 text-sm mt-3">
+              Already have an account?{' '}
+              <Link href="/login" className="text-emerald-400 hover:text-emerald-300">
+                Sign in
+              </Link>
             </p>
-            <span className="inline-flex items-center gap-2 text-emerald-400 text-sm font-medium group-hover:gap-3 transition-all">
-              Get Started
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </Link>
+          </div>
 
           {/* Analyze Contract */}
           <Link
