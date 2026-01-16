@@ -53,7 +53,7 @@ export default function HomePage() {
               Protect Your NIL Deals
             </h1>
             <p className="text-xl text-white/50 mb-10">
-              AI-powered contract analysis built for student athletes. Know your worth. Spot red flags. Get fair deals.
+              AI-powered analysis built for student athletes. Know your worth. Spot red flags. Get fair deals.
             </p>
 
             {/* Features List */}
