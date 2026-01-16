@@ -48,8 +48,12 @@ export default function DashboardLayout({
   }, [supabase.auth, router])
 
   async function handleSignOut() {
-    await supabase.auth.signOut()
-    router.push('/')
+    try {
+      await supabase.auth.signOut()
+    } catch (e) {
+      console.error('Sign out error:', e)
+    }
+    window.location.href = '/'
   }
 
   if (loading) {
@@ -63,10 +67,9 @@ export default function DashboardLayout({
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: HomeIcon },
     { href: '/dashboard/market', label: 'NIL Market', icon: MarketIcon },
-    { href: '/dashboard/nil-guide', label: 'NIL Guide', icon: GuideIcon },
+    { href: '/dashboard/nil-guide', label: 'Compliance Guide', icon: GuideIcon },
     { href: '/dashboard/water-cooler', label: 'Water Cooler', icon: ChatIcon },
     { href: '/dashboard/scans', label: 'My Scans', icon: ScanIcon },
-    { href: '/dashboard/profile', label: 'My Profile', icon: ProfileIcon },
   ]
 
   const isActive = (href: string) => {
@@ -111,7 +114,7 @@ export default function DashboardLayout({
           {/* User Menu */}
           <div className="flex items-center gap-4">
             <Link
-              href="/"
+              href="/scan"
               className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-black rounded-lg text-sm font-medium hover:bg-emerald-400 transition-colors"
             >
               <ScanIcon className="w-4 h-4" />
