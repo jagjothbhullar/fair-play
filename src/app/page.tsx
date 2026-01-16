@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from '@/components/AuthModal'
+import Disclaimer from '@/components/Disclaimer'
 import type { User } from '@supabase/supabase-js'
 
 export default function HomePage() {
@@ -164,6 +165,9 @@ export default function HomePage() {
         <p className="mt-16 text-center text-white/30 text-sm">
           Built for California D1 athletes. Trusted by student athletes nationwide.
         </p>
+
+        {/* Disclaimer */}
+        <Disclaimer />
       </main>
 
       {/* Sign In Modal */}

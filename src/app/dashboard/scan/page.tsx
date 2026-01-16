@@ -231,6 +231,15 @@ export default function DashboardScanPage() {
           <p className="text-center text-white/30 text-sm mt-4">
             Unlimited scans with your account
           </p>
+
+          {/* Scanner Disclaimer */}
+          <div className="mt-6 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+            <p className="text-white/30 text-xs text-center leading-relaxed">
+              This analysis is for educational purposes only and is not legal advice.
+              Fair Play is not a law firm or licensed agent. Always consult a qualified
+              attorney before signing any contract.
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -367,6 +376,15 @@ export default function DashboardScanPage() {
             overallRisk: result.overallRisk,
             redFlagsCount: result.redFlags.length
           }} />
+        </div>
+
+        {/* Results Disclaimer */}
+        <div className="mt-8 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
+          <p className="text-yellow-400/70 text-xs text-center leading-relaxed">
+            <span className="font-medium">Important:</span> This analysis is AI-generated for educational purposes only.
+            Fair Play is not a law firm, sports agent, or financial advisor. This is not legal advice.
+            Always have contracts reviewed by a qualified attorney before signing.
+          </p>
         </div>
       </div>
     )

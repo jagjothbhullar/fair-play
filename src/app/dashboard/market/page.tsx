@@ -125,6 +125,14 @@ export default function NILMarketPage() {
         <p className="mt-4 text-center text-white/30 text-sm">
           Anonymized data from verified athlete-reported deals
         </p>
+
+        {/* Market Disclaimer */}
+        <div className="mt-8 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+          <p className="text-white/30 text-xs text-center leading-relaxed">
+            Valuations are estimates based on publicly available data and are for informational purposes only.
+            Fair Play is not a financial advisor or licensed agent. Actual deal values vary based on many factors.
+          </p>
+        </div>
       </div>
     </div>
   )

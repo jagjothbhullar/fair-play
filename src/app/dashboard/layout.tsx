@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ProfileSetupModal from '@/components/ProfileSetupModal'
+import Disclaimer from '@/components/Disclaimer'
 import type { User } from '@supabase/supabase-js'
 
 export default function DashboardLayout({
@@ -204,6 +205,11 @@ export default function DashboardLayout({
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 pb-24 lg:pb-8">
         {children}
+
+        {/* Footer Disclaimer */}
+        <div className="mt-16 pb-8">
+          <Disclaimer variant="compact" />
+        </div>
       </main>
 
       {/* Profile Setup Modal */}
