@@ -9,6 +9,43 @@ datasource db {
 }
 
 // ============================================================================
+// ATHLETE PROFILE (simplified for MVP)
+// ============================================================================
+
+model AthleteProfile {
+  id              String   @id @default(cuid())
+  supabaseUserId  String   @unique // Links to Supabase auth user
+
+  // Basic Info
+  firstName       String
+  lastName        String
+  email           String   // From Supabase, stored for convenience
+
+  // School & Sport (using shortName to match California data)
+  schoolShortName String   // "UCLA", "USC", "Stanford", etc.
+  sport           String   // "Men's Basketball", "Women's Volleyball", etc.
+  position        String?  // "PG", "QB", etc.
+  jerseyNumber    String?
+  classYear       String   // "Freshman", "Sophomore", "Junior", "Senior", "Grad"
+
+  // Social Media
+  instagramHandle String?
+  twitterHandle   String?
+  tiktokHandle    String?
+  followerCount   Int?     // Total estimated followers
+
+  // Profile Status
+  isProfileComplete Boolean @default(false)
+  isVerified        Boolean @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([schoolShortName])
+  @@index([sport])
+}
+
+// ============================================================================
 // SCAN HISTORY (for logged-in users)
 // ============================================================================
 

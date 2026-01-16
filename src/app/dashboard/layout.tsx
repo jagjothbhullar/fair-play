@@ -24,6 +24,19 @@ export default function DashboardLayout({
         router.push('/login')
         return
       }
+
+      // Check if user has a profile
+      try {
+        const response = await fetch(`/api/profile?userId=${user.id}`)
+        const data = await response.json()
+        if (!data.hasProfile) {
+          router.push('/profile/setup')
+          return
+        }
+      } catch (e) {
+        console.error('Profile check error:', e)
+      }
+
       setUser(user)
       setLoading(false)
     }

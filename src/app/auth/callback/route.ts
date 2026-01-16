@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -8,10 +9,25 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error) {
-      // Successfully confirmed - redirect to home (or wherever 'next' points)
+    if (!error && data.user) {
+      // Check if user has a profile
+      try {
+        const profile = await prisma.athleteProfile.findUnique({
+          where: { supabaseUserId: data.user.id },
+        })
+
+        if (!profile) {
+          // No profile - redirect to profile setup
+          return NextResponse.redirect(`${origin}/profile/setup`)
+        }
+      } catch (e) {
+        // If DB check fails, still let them through to dashboard
+        console.error('Profile check error:', e)
+      }
+
+      // Has profile - redirect to dashboard or next
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
