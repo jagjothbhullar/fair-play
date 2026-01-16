@@ -15,6 +15,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -116,14 +117,65 @@ export default function DashboardLayout({
               <ScanIcon className="w-4 h-4" />
               Scan Contract
             </Link>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-white/50 hidden md:block">{user?.email}</span>
+
+            {/* Profile Dropdown */}
+            <div className="relative">
               <button
-                onClick={handleSignOut}
-                className="px-3 py-2 text-sm text-white/60 hover:text-white transition-colors"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
               >
-                Sign Out
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
+                  <span className="text-black font-medium text-sm">
+                    {user?.email?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-sm text-white/70 hidden md:block max-w-[150px] truncate">
+                  {user?.email}
+                </span>
+                <svg
+                  className={`w-4 h-4 text-white/50 transition-transform ${showUserMenu ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
+
+              {/* Dropdown Menu */}
+              {showUserMenu && (
+                <>
+                  {/* Backdrop to close menu */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowUserMenu(false)}
+                  />
+
+                  <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/5 transition-colors"
+                    >
+                      <ProfileIcon className="w-4 h-4" />
+                      Edit Profile
+                    </Link>
+                    <div className="border-t border-white/10" />
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false)
+                        handleSignOut()
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/5 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
