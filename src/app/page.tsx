@@ -32,14 +32,7 @@ export default function HomePage() {
             </div>
             <span className="text-xl font-semibold tracking-tight">Fair Play</span>
           </div>
-          {user ? (
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
-            >
-              Dashboard
-            </Link>
-          ) : (
+          {!user && (
             <Link
               href="/login"
               className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
