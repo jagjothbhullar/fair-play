@@ -568,26 +568,39 @@ export const conferenceTierMultipliers: Record<string, number> = {
   'Independent': 0.3,
 }
 
-// Sport-specific ceiling values from Opendorse data (Top 25 athletes annual average)
+// Sport-specific ceiling values - Top 25 athletes annual average (2024-25 data)
+// Sources: Opendorse NIL 3.0 Report, On3 NIL Database
 export const sportCeilings: Record<string, number> = {
-  'Football': 294000,
-  "Men's Basketball": 349000,
-  "Women's Basketball": 88975,
-  "Women's Gymnastics": 150000, // High social media value
-  "Women's Volleyball": 5868,
+  "Men's Basketball": 349000,   // Highest per-player average
+  'Football': 294000,           // 41% of all NIL deals
+  "Women's Gymnastics": 150000, // Exceptional social media engagement
+  "Women's Basketball": 88975,  // 85% YoY growth
   'Baseball': 47710,
-  'Softball': 8545,
   'Track and Field': 15000,
-  "Women's Soccer": 8000,
-  "Men's Soccer": 5000,
-  'Swimming and Diving': 10000,
-  'Tennis': 8000,
+  'Beach Volleyball': 12000,    // High social media potential
   'Golf': 12000,
+  'Swimming and Diving': 10000,
+  'Softball': 8545,
+  "Women's Soccer": 8000,
+  'Tennis': 8000,
   'Wrestling': 6000,
-  'Beach Volleyball': 10000, // Social media potential
-  'Rowing': 3000,
+  "Women's Volleyball": 5868,
+  "Men's Soccer": 5000,
   "Men's Volleyball": 5000,
   "Water Polo": 4000,
+  'Rowing': 3000,
+}
+
+// Average NIL earnings by sport (all athletes, not just top 25)
+export const sportAverages: Record<string, number> = {
+  "Men's Basketball": 65853,    // Highest per-player average
+  'Football': 40179,            // Diluted by large roster sizes
+  "Women's Basketball": 16222,  // Power 4 average
+  'Softball': 7947,             // Power 4 women's average
+  "Women's Volleyball": 5000,
+  'Baseball': 8000,
+  "Women's Gymnastics": 25000,
+  'Other': 3371,                // Median across all sports
 }
 
 // Transfer portal premium multiplier

@@ -111,54 +111,103 @@ const performanceTiers = [
   { value: 'walkon', label: 'Walk-on / Bench', multiplier: 0.3 },
 ]
 
-// Base deal values by type (median from CalMatters data)
+// Base deal values by type - Updated with 2025 influencer marketing benchmarks
+// Athletes get 2.3x higher engagement than regular influencers (5.6% vs 2.4% avg engagement)
+// Average sponsored post for college athlete = $220 (but varies widely by following)
 const baseDealValues: Record<string, { low: number; median: number; high: number }> = {
-  'Social Media': { low: 500, median: 1500, high: 3500 },
-  'Public Appearance': { low: 750, median: 2000, high: 5000 },
-  'Autograph': { low: 300, median: 1000, high: 2500 },
-  'Camps and Lessons': { low: 1000, median: 3000, high: 8000 },
-  'Licensing': { low: 2000, median: 5000, high: 15000 },
-  'Collective': { low: 3000, median: 10000, high: 30000 },
-  'Other': { low: 400, median: 1200, high: 3000 },
+  'Social Media': { low: 100, median: 500, high: 2500 },      // Per-post; scales heavily with followers
+  'Public Appearance': { low: 500, median: 1500, high: 5000 },
+  'Autograph': { low: 200, median: 750, high: 2000 },
+  'Camps and Lessons': { low: 1000, median: 3000, high: 10000 },
+  'Licensing': { low: 2500, median: 7500, high: 25000 },
+  'Collective': { low: 5000, median: 15000, high: 50000 },    // Monthly collective payments
+  'Other': { low: 300, median: 1000, high: 3000 },
 }
 
-// Annual NIL value base estimates by follower tier (based on On3 NIL valuations)
+// Platform-specific per-post rates by follower tier (2025 influencer marketing data)
+// Athletes typically command premium due to 2.3x higher engagement
+const socialMediaRates: Record<string, Record<string, { low: number; high: number }>> = {
+  'Instagram': {
+    'under_1k': { low: 20, high: 100 },
+    '1k_10k': { low: 100, high: 500 },      // Nano-influencer tier
+    '10k_50k': { low: 250, high: 1500 },    // Micro-influencer tier
+    '50k_100k': { low: 500, high: 3000 },
+    '100k_500k': { low: 1500, high: 7500 }, // Mid-tier
+    '500k_1m': { low: 5000, high: 15000 },  // Macro
+    '1m_plus': { low: 10000, high: 100000 }, // Mega
+  },
+  'TikTok': {
+    'under_1k': { low: 5, high: 50 },
+    '1k_10k': { low: 25, high: 300 },
+    '10k_50k': { low: 200, high: 1000 },
+    '50k_100k': { low: 500, high: 2500 },
+    '100k_500k': { low: 1000, high: 5000 },
+    '500k_1m': { low: 2500, high: 12000 },
+    '1m_plus': { low: 10000, high: 50000 },
+  },
+  'YouTube': {
+    'under_1k': { low: 50, high: 200 },
+    '1k_10k': { low: 200, high: 1000 },
+    '10k_50k': { low: 500, high: 3000 },
+    '50k_100k': { low: 2000, high: 8000 },
+    '100k_500k': { low: 5000, high: 15000 },
+    '500k_1m': { low: 10000, high: 30000 },
+    '1m_plus': { low: 25000, high: 75000 },
+  },
+}
+
+// Annual NIL value base estimates by follower tier
+// Research shows: Average NIL = $53,643, but Median = $3,371 (huge gap!)
+// Only 1% of athletes earn >$50,000 annually
+// These ranges reflect realistic expectations across the distribution
 function getFollowerAnnualBase(tier: string): { low: number; median: number; high: number } {
   const bases: Record<string, { low: number; median: number; high: number }> = {
-    'under_1k': { low: 500, median: 2000, high: 5000 },
-    '1k_10k': { low: 2000, median: 8000, high: 20000 },
-    '10k_50k': { low: 10000, median: 35000, high: 75000 },
-    '50k_100k': { low: 30000, median: 75000, high: 150000 },
-    '100k_500k': { low: 75000, median: 200000, high: 500000 },
-    '500k_1m': { low: 200000, median: 500000, high: 1200000 },
-    '1m_plus': { low: 500000, median: 1500000, high: 5000000 },
+    'under_1k': { low: 0, median: 500, high: 2000 },           // Most athletes here
+    '1k_10k': { low: 500, median: 3000, high: 10000 },         // Median athlete range
+    '10k_50k': { low: 5000, median: 20000, high: 50000 },      // Above average
+    '50k_100k': { low: 20000, median: 50000, high: 120000 },   // Top 10%
+    '100k_500k': { low: 50000, median: 150000, high: 400000 }, // Top 5%
+    '500k_1m': { low: 150000, median: 400000, high: 1000000 }, // Top 1%
+    '1m_plus': { low: 400000, median: 1200000, high: 5000000 }, // Elite tier
   }
-  return bases[tier] || { low: 2000, median: 10000, high: 25000 }
+  return bases[tier] || { low: 500, median: 3000, high: 10000 }
 }
 
-// Sport multiplier for annual value (revenue sports = higher value)
+// Sport multiplier for annual value - Updated with 2024-25 research data
+// Top 25 athletes by sport: Men's BB $349K, Football $294K, Women's BB $89K
+// Average by sport: Men's BB $65,853, Football $40,179, Women's BB $16,222
 function getSportAnnualMultiplier(sport: string): number {
   const multipliers: Record<string, number> = {
-    'Football': 1.5,
-    "Men's Basketball": 1.4,
-    "Women's Basketball": 1.2,
-    "Women's Gymnastics": 1.3, // High social media engagement
-    "Women's Volleyball": 1.1,
-    'Baseball': 0.9,
-    'Softball': 0.85,
-    'Track and Field': 0.7,
-    "Men's Soccer": 0.75,
-    "Women's Soccer": 0.8,
-    'Swimming and Diving': 0.7,
-    'Tennis': 0.75,
-    'Golf': 0.8,
-    'Wrestling': 0.65,
-    'Beach Volleyball': 0.9,
-    'Rowing': 0.5,
-    "Men's Volleyball": 0.7,
-    "Water Polo": 0.6,
+    "Men's Basketball": 1.6,    // Highest per-player average ($65,853)
+    'Football': 1.4,            // 41% of all NIL deals, but diluted by roster size
+    "Women's Basketball": 1.3,  // 85% YoY growth, rising fast
+    "Women's Gymnastics": 1.5,  // Exceptional social media engagement
+    "Women's Volleyball": 1.1,  // Growing - 90 commercial deals/year for top earners
+    'Baseball': 0.9,            // Top 25 avg: $47,710
+    'Softball': 0.8,            // 18.5% of Power 4 women's deals
+    'Track and Field': 0.6,
+    "Men's Soccer": 0.65,
+    "Women's Soccer": 0.7,
+    'Swimming and Diving': 0.6,
+    'Tennis': 0.7,
+    'Golf': 0.75,
+    'Wrestling': 0.55,
+    'Beach Volleyball': 1.0,    // High social media potential
+    'Rowing': 0.4,
+    "Men's Volleyball": 0.6,
+    "Water Polo": 0.5,
   }
-  return multipliers[sport] || 0.75
+  return multipliers[sport] || 0.65
+}
+
+// Position premium for certain sports (QB commands 2-5x other positions)
+function getPositionPremium(sport: string): string {
+  const premiums: Record<string, string> = {
+    'Football': 'QBs earn 2-5x other positions',
+    "Men's Basketball": 'Guards typically earn more than bigs',
+    "Women's Gymnastics": 'All-around athletes command premium',
+  }
+  return premiums[sport] || ''
 }
 
 export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
@@ -574,8 +623,9 @@ export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
 
           {/* Disclaimer */}
           <p className="mt-4 text-white/30 text-xs text-center">
-            Based on CalMatters NIL Database, On3 NIL Valuations, and Opendorse Reports.
-            Annual value estimates total NIL earning potential across all deal types.
+            Based on On3 NIL Database, Opendorse NIL 3.0 Report, and 2025 influencer marketing benchmarks.
+            Note: Average NIL = $53,643 but median = $3,371 — only 1% of athletes earn &gt;$50K.
+            Athletes get 2.3x higher engagement than regular influencers.
           </p>
         </div>
       )}
