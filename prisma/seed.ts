@@ -285,7 +285,7 @@ async function main() {
           value: 600,
           action: 'require_ncaa_disclosure',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
     prisma.complianceRule.upsert({
@@ -301,7 +301,7 @@ async function main() {
           patterns: ['per touchdown', 'per goal', 'per point', 'performance bonus', 'playing time'],
           action: 'flag_pay_for_play',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
     prisma.complianceRule.upsert({
@@ -317,7 +317,7 @@ async function main() {
           patterns: ['must attend', 'enrollment required', 'transfer prohibited', 'remain enrolled'],
           action: 'flag_inducement',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
     prisma.complianceRule.upsert({
@@ -335,7 +335,7 @@ async function main() {
           businessDays: true,
           action: 'warn_disclosure_deadline',
         },
-        severity: 'WARNING',
+        severity: 'HIGH',
       },
     }),
 
@@ -354,7 +354,7 @@ async function main() {
           target: 'school',
           action: 'require_school_disclosure',
         },
-        severity: 'WARNING',
+        severity: 'HIGH',
       },
     }),
     prisma.complianceRule.upsert({
@@ -371,7 +371,7 @@ async function main() {
           prompt: 'Does this deal conflict with any team sponsorship agreements?',
           action: 'flag_team_conflict',
         },
-        severity: 'WARNING',
+        severity: 'HIGH',
       },
     }),
 
@@ -390,7 +390,7 @@ async function main() {
           question: 'Does this deal involve using Stanford logos, marks, or branding?',
           action: 'require_marks_approval',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
     prisma.complianceRule.upsert({
@@ -407,7 +407,7 @@ async function main() {
           question: 'Will you be wearing Stanford apparel in this NIL activity?',
           action: 'flag_apparel_usage',
         },
-        severity: 'WARNING',
+        severity: 'HIGH',
       },
     }),
 
@@ -426,7 +426,7 @@ async function main() {
           question: 'Does this deal involve using SJSU logos, marks, or branding?',
           action: 'require_marks_approval',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
     prisma.complianceRule.upsert({
@@ -443,7 +443,7 @@ async function main() {
           question: 'Will this NIL activity take place on SJSU campus or facilities?',
           action: 'require_facility_approval',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
     prisma.complianceRule.upsert({
@@ -460,7 +460,7 @@ async function main() {
           question: 'Does this deal involve selling items provided by SJSU (awards, apparel, etc.)?',
           action: 'flag_school_items',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
 
@@ -480,7 +480,7 @@ async function main() {
           value: true,
           action: 'flag_international_review',
         },
-        severity: 'WARNING',
+        severity: 'HIGH',
       },
     }),
 
@@ -498,7 +498,7 @@ async function main() {
           type: 'required_action',
           action: 'require_pre_approval',
         },
-        severity: 'ERROR',
+        severity: 'CRITICAL',
       },
     }),
   ])
@@ -514,7 +514,7 @@ async function main() {
         name: 'Perpetual Rights',
         patternType: 'REGEX',
         patternValue: '(in perpetuity|perpetual|forever|unlimited time|indefinite|no expiration)',
-        severity: 'ERROR',
+        severity: 'CRITICAL',
         explanation: 'This clause allows the brand to use your name, image, and likeness indefinitely - potentially for the rest of your life - without additional compensation.',
         recommendation: 'Request a specific end date for usage rights, typically 1-2 years. After the contract ends, they should no longer be able to use your content.',
       },
@@ -524,7 +524,7 @@ async function main() {
         name: 'Broad Exclusivity',
         patternType: 'REGEX',
         patternValue: '(exclusive|exclusivity|sole rights|only (brand|company|sponsor))',
-        severity: 'WARNING',
+        severity: 'HIGH',
         explanation: 'Exclusivity clauses prevent you from working with competing brands. Overly broad exclusivity can severely limit your earning potential.',
         recommendation: 'Ensure exclusivity is narrowly defined (specific product category only), time-limited (6 months max), and compensated appropriately for the restriction.',
       },
@@ -534,7 +534,7 @@ async function main() {
         name: 'One-Sided Termination',
         patternType: 'REGEX',
         patternValue: '(company may terminate|brand may cancel|at (our|company\'s|brand\'s) sole discretion)',
-        severity: 'WARNING',
+        severity: 'HIGH',
         explanation: 'This allows the brand to end the contract at any time while you remain bound. You should have equal rights to terminate.',
         recommendation: 'Request bilateral termination rights - both parties should have the same ability to end the agreement with reasonable notice.',
       },
@@ -544,7 +544,7 @@ async function main() {
         name: 'Vague Moral Clause',
         patternType: 'REGEX',
         patternValue: '(conduct detrimental|damage.*(reputation|image|brand)|inconsistent with.*values|moral turpitude)',
-        severity: 'WARNING',
+        severity: 'HIGH',
         explanation: 'Vague moral clauses give brands excessive power to terminate based on subjective interpretations of your behavior.',
         recommendation: 'Request specific definitions of what behaviors trigger termination, and ensure minor incidents don\'t result in contract cancellation.',
       },
@@ -554,7 +554,7 @@ async function main() {
         name: 'Transfer/Clawback Penalty',
         patternType: 'REGEX',
         patternValue: '(transfer.*(repay|return|forfeit)|change school.*(penalty|repayment)|clawback|must remain)',
-        severity: 'ERROR',
+        severity: 'CRITICAL',
         explanation: 'This provision would require you to repay money if you transfer schools, which could trap you or create financial hardship.',
         recommendation: 'Remove any language tying payments to your enrollment at a specific school. This may also violate NCAA rules against inducements.',
       },
@@ -564,7 +564,7 @@ async function main() {
         name: 'IP Assignment',
         patternType: 'REGEX',
         patternValue: '(assign.*(all|any) (rights|intellectual property|IP)|work.?for.?hire|we own|brand owns)',
-        severity: 'WARNING',
+        severity: 'HIGH',
         explanation: 'This transfers ownership of content you create to the brand. They could use or resell it without your approval.',
         recommendation: 'Grant a license to use content rather than assigning ownership. You should retain rights to your own content.',
       },
@@ -574,7 +574,7 @@ async function main() {
         name: 'Missing Payment Terms',
         patternType: 'SEMANTIC',
         patternValue: 'payment_terms_missing',
-        severity: 'WARNING',
+        severity: 'HIGH',
         explanation: 'The contract doesn\'t clearly specify when and how you\'ll be paid, which could lead to delayed or disputed payments.',
         recommendation: 'Ensure the contract specifies: exact payment amount, payment method, payment timeline (within 30 days of deliverable), and what happens if payment is late.',
       },
@@ -584,7 +584,7 @@ async function main() {
         name: 'Hidden Costs',
         patternType: 'REGEX',
         patternValue: '(athlete.*(responsible|pay|cover).*(expense|cost|fee)|deduct|withhold|at athlete\'s expense)',
-        severity: 'WARNING',
+        severity: 'HIGH',
         explanation: 'The contract may require you to pay for travel, equipment, or other expenses that reduce your actual compensation.',
         recommendation: 'Clarify all costs upfront. The brand should cover expenses related to their campaign, or these should be deducted from the stated compensation.',
       },
@@ -594,9 +594,96 @@ async function main() {
         name: 'Performance-Based Pay',
         patternType: 'REGEX',
         patternValue: '(bonus.*(score|win|touchdown|goal|point)|per (game|appearance|start)|playing time)',
-        severity: 'ERROR',
+        severity: 'CRITICAL',
         explanation: 'Pay tied to athletic performance may violate NCAA pay-for-play rules and could jeopardize your eligibility.',
         recommendation: 'Remove any language tying compensation to on-field performance. NIL compensation must be for marketing services, not athletic achievement.',
+      },
+    }),
+    // NEW: SEC Template Transfer Restrictions (from ESPN investigation)
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'Transfer Portal Restrictions',
+        patternType: 'REGEX',
+        patternValue: '(initiate|solicit|entertain|negotiate|accept).*(contact|offer|discussion).*(other|competing|different).*(school|institution|program)',
+        severity: 'CRITICAL',
+        explanation: 'SEC-template language that prohibits you from even entertaining contact from other schools. This locks you in and turns you into an informant on your own recruitment.',
+        recommendation: 'Remove any language restricting your ability to explore transfer options. Your right to transfer should not be limited by NIL contracts.',
+      },
+    }),
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'Required Contact Reporting',
+        patternType: 'REGEX',
+        patternValue: '(immediately|promptly).*(report|disclose|notify).*(contact|approach|inquiry).*(other|competing|different).*(school|institution|program)',
+        severity: 'HIGH',
+        explanation: 'This clause requires you to report contact from other schools to your current institution, effectively making you inform on your own recruitment process.',
+        recommendation: 'Remove any requirement to report contact from other schools. Your transfer discussions should remain private until you decide to act.',
+      },
+    }),
+    // Employment Status Waivers
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'Employee Status Waiver',
+        patternType: 'REGEX',
+        patternValue: '(not an employee|waive.*(employee|employment|labor)|independent contractor.*(not employee)|accept as full compensation)',
+        severity: 'CRITICAL',
+        explanation: 'This clause attempts to have you waive your potential classification as an employee, which could affect your future legal rights. The NLRB and courts are currently deciding if athletes are employees.',
+        recommendation: 'Have a lawyer review any language about employment status. This is an evolving legal area and premature waivers may not be enforceable.',
+      },
+    }),
+    // Broad Likeness Rights
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'Overly Broad Likeness Rights',
+        patternType: 'REGEX',
+        patternValue: '(signature|initials|photograph|gif|tattoo|voice|biometric).*(derivative|sublicense|third part|any and all)',
+        severity: 'HIGH',
+        explanation: 'This grants extremely broad rights to your likeness including unusual items like visible tattoos, voice, or biometric data, with ability to sublicense to anyone.',
+        recommendation: 'Narrow the scope of likeness rights to specific uses. Avoid broad sublicensing rights that let unknown third parties use your image.',
+      },
+    }),
+    // Confidentiality Disparities
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'One-Sided Confidentiality',
+        patternType: 'REGEX',
+        patternValue: '(athlete|student).*(shall not|may not|prohibited from).*(disclose|discuss|share|reveal).*(term|amount|compensation|payment)',
+        severity: 'HIGH',
+        explanation: 'You are forbidden from discussing your deal terms, but the school or collective faces no such restriction. This prevents you from comparing deals and knowing market rates.',
+        recommendation: 'Request mutual confidentiality obligations or remove confidentiality requirements entirely. Transparency helps all athletes negotiate fairly.',
+      },
+    }),
+    // No-Redshirt Clauses
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'Redshirt Restrictions',
+        patternType: 'REGEX',
+        patternValue: '(redshirt|medical.*(shirt|year)).*(prohibited|not permitted|consent|approval|coaching staff)',
+        severity: 'CRITICAL',
+        explanation: 'Tying your compensation to whether you redshirt is a pay-for-play violation. Your medical and athletic decisions should not affect your NIL compensation.',
+        recommendation: 'Remove any language connecting NIL payments to redshirt decisions. This likely violates NCAA rules.',
+      },
+    }),
+    // CSC Rejection Triggers
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'No Valid Business Purpose',
+        patternType: 'SEMANTIC',
+        patternValue: 'nil_warehousing_no_activation',
+        severity: 'HIGH',
+        explanation: 'The contract grants NIL rights but requires no actual NIL activities (appearances, posts, promotions). This "warehousing" of rights is a top reason the CSC rejects deals.',
+        recommendation: 'Ensure the contract specifies actual NIL activities you will perform. Payment without deliverables may be flagged as an inducement.',
+      },
+    }),
+    // Multi-Year Lock-In
+    prisma.contractRedFlagPattern.create({
+      data: {
+        name: 'Excessive Contract Length',
+        patternType: 'REGEX',
+        patternValue: '(term|duration|period).*(3|4|5|three|four|five|multi).*(year|season|annual)',
+        severity: 'HIGH',
+        explanation: 'Multi-year NIL contracts lock you in while the market rapidly evolves. Your value may increase significantly, but you\'ll be stuck at old rates.',
+        recommendation: 'Prefer 1-year contracts with renewal options. If multi-year is required, negotiate annual rate increases and reasonable exit clauses.',
       },
     }),
   ])

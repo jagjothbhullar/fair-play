@@ -751,9 +751,10 @@ enum ComplianceScope {
 }
 
 enum RuleSeverity {
-  ERROR
-  WARNING
-  INFO
+  CRITICAL  // Must address - could harm athlete or violate rules
+  HIGH      // Should address - significant concern
+  MEDIUM    // Consider addressing - moderate concern
+  LOW       // Minor issue - good to know
 }
 
 enum PatternType {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { californiaSchools, type CaliforniaSchool } from '@/lib/data/california-schools'
+import { agentRegulation, cscData, revenueSharing } from '@/lib/data/nil-knowledge-base'
 
 interface AthleteProfile {
   schoolShortName: string
@@ -438,7 +439,7 @@ export default function NILGuidePage() {
   const [profile, setProfile] = useState<AthleteProfile | null>(null)
   const [school, setSchool] = useState<CaliforniaSchool | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeSection, setActiveSection] = useState<'school' | 'california' | 'ncaa' | 'tips'>('school')
+  const [activeSection, setActiveSection] = useState<'school' | 'california' | 'ncaa' | 'agents' | 'tips'>('school')
 
   const supabase = createClient()
 
@@ -491,6 +492,7 @@ export default function NILGuidePage() {
           { id: 'school', label: school?.shortName || 'Your School', icon: '🏫' },
           { id: 'california', label: 'California Law', icon: '📜' },
           { id: 'ncaa', label: 'NCAA Rules', icon: '🏆' },
+          { id: 'agents', label: 'Agent Guide', icon: '🤝' },
           { id: 'tips', label: 'Tips & Best Practices', icon: '💡' },
         ].map((tab) => (
           <button
@@ -790,6 +792,172 @@ export default function NILGuidePage() {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Agents Section */}
+      {activeSection === 'agents' && (
+        <div className="space-y-6">
+          {/* Warning Banner */}
+          <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-6">
+            <div className="flex items-start gap-4">
+              <span className="text-3xl">⚠️</span>
+              <div>
+                <h2 className="text-xl font-bold text-orange-400 mb-2">NIL Agent Warning</h2>
+                <p className="text-white/70">
+                  Unlike traditional sports agents, <span className="text-orange-400 font-medium">NIL agents are largely unregulated</span>.
+                  Many are family members, friends, or individuals with no credentials. The FTC is currently
+                  investigating 20+ universities for agent law violations. Protect yourself.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Federal Law */}
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="text-blue-400">🏛️</span> Federal Law: {agentRegulation.sparta.name}
+            </h3>
+            <p className="text-white/50 text-sm mb-4">This federal law prohibits agents from:</p>
+            <ul className="space-y-2">
+              {agentRegulation.sparta.prohibits.map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="w-5 h-5 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="w-1.5 h-1.5 bg-red-400 rounded-full" />
+                  </span>
+                  <span className="text-white/70">{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-white/40 text-xs mt-4">Enforcement: Federal Trade Commission (FTC)</p>
+          </div>
+
+          {/* State Variation */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <span className="text-emerald-400">✓</span> California (Strict)
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {agentRegulation.stateVariation.strict.requirements.map((req, i) => (
+                  <li key={i} className="flex items-start gap-2 text-white/70">
+                    <span className="text-emerald-400">•</span> {req}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <span className="text-red-400">✗</span> Arizona (Minimal)
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {agentRegulation.stateVariation.minimal.requirements.map((req, i) => (
+                  <li key={i} className="flex items-start gap-2 text-white/70">
+                    <span className="text-red-400">•</span> {req}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-red-400/70 text-xs mt-3">Anyone can call themselves an NIL agent in states like Arizona</p>
+            </div>
+          </div>
+
+          {/* Red Flags */}
+          <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="text-red-400">🚩</span> Agent Red Flags
+            </h3>
+            <div className="grid md:grid-cols-2 gap-3">
+              {agentRegulation.agentRedFlags.map((flag, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 bg-red-500/5 rounded-xl">
+                  <span className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-400 text-xs font-bold">{i + 1}</span>
+                  </span>
+                  <span className="text-white/70 text-sm">{flag}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Commission Guide */}
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+            <h3 className="text-lg font-semibold mb-4">Standard Commission Rates</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-emerald-500/5 rounded-xl">
+                <span className="text-white/70">NIL deals (standard)</span>
+                <span className="text-emerald-400 font-bold">10-15%</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-yellow-500/5 rounded-xl">
+                <span className="text-white/70">Maximum reasonable</span>
+                <span className="text-yellow-400 font-bold">15-20%</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-red-500/5 rounded-xl">
+                <span className="text-white/70">Red flag territory</span>
+                <span className="text-red-400 font-bold">&gt;20%</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                <span className="text-white/70">HUSTLE Act proposed cap</span>
+                <span className="text-emerald-400 font-bold">5%</span>
+              </div>
+            </div>
+            <p className="text-white/40 text-xs mt-4">
+              The HUSTLE Act (introduced Dec 2025) would cap agent fees at 5% if passed.
+            </p>
+          </div>
+
+          {/* Questions to Ask */}
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="text-blue-400">❓</span> Questions to Ask Any Agent
+            </h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-400 text-xs font-bold">1</span>
+                <span className="text-white/70">Are you registered as an agent in my state (California)?</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-400 text-xs font-bold">2</span>
+                <span className="text-white/70">What is your commission rate, and how is it calculated?</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-400 text-xs font-bold">3</span>
+                <span className="text-white/70">How many NIL deals have you closed? Can I see references?</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-400 text-xs font-bold">4</span>
+                <span className="text-white/70">Do you represent other athletes at my school? Any conflicts?</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-400 text-xs font-bold">5</span>
+                <span className="text-white/70">How can I terminate our relationship if needed?</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* CSC Stats */}
+          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-white/10 rounded-2xl p-6">
+            <h3 className="text-lg font-semibold mb-4">Current NIL Landscape (CSC Data)</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-emerald-400">{cscData.athletesWithDeals.toLocaleString()}</p>
+                <p className="text-xs text-white/40">Athletes with deals</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-white">${(cscData.totalValueCleared / 1_000_000).toFixed(0)}M</p>
+                <p className="text-xs text-white/40">Total cleared</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-red-400">{(cscData.rejectionRate * 100).toFixed(0)}%</p>
+                <p className="text-xs text-white/40">Rejection rate</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-400">${(revenueSharing.currentCap / 1_000_000).toFixed(1)}M</p>
+                <p className="text-xs text-white/40">School cap</p>
+              </div>
+            </div>
+            <p className="text-white/40 text-xs mt-4 text-center">
+              Note: School cap is $20.5M, but third-party collective deals have NO cap
+            </p>
           </div>
         </div>
       )}

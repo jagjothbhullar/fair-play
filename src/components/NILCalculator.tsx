@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { californiaSchools, conferenceTierMultipliers, sportCeilings, TRANSFER_PREMIUM, AGENT_PREMIUM } from '@/lib/data/california-schools'
+import { nilMarketData, topAthleteValuations } from '@/lib/data/nil-knowledge-base'
 
 interface CalculatorResult {
   estimation: {
@@ -623,10 +624,22 @@ export default function NILCalculator({ onCalculate }: NILCalculatorProps) {
 
           {/* Disclaimer */}
           <p className="mt-4 text-white/30 text-xs text-center">
-            Based on On3 NIL Database, Opendorse NIL 3.0 Report, and 2025 influencer marketing benchmarks.
-            Note: Average NIL = $53,643 but median = $3,371 — only 1% of athletes earn &gt;$50K.
-            Athletes get 2.3x higher engagement than regular influencers.
+            Based on On3 NIL Database, Opendorse NIL at 3 Report, CSC/NIL Go data, and 2025-26 market benchmarks.
+            Note: Average NIL = ${nilMarketData.averageNIL.toLocaleString()} but median = ${nilMarketData.medianNIL.toLocaleString()} — only {(nilMarketData.percentEarningOver50k * 100).toFixed(0)}% of athletes earn &gt;$50K.
+            Athletes with agents earn {nilMarketData.agentPremium}x more. Transfer portal athletes earn {nilMarketData.transferPremium}x more.
           </p>
+
+          {/* Top Earners Context */}
+          <div className="mt-4 p-3 bg-white/[0.02] rounded-lg">
+            <p className="text-white/40 text-xs text-center mb-2">For context, top NIL earners (2025-26):</p>
+            <div className="flex flex-wrap justify-center gap-2 text-xs">
+              {topAthleteValuations.slice(0, 3).map((athlete, i) => (
+                <span key={i} className="text-white/30">
+                  {athlete.name}: <span className="text-emerald-400/70">${(athlete.valuation / 1_000_000).toFixed(1)}M</span>
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

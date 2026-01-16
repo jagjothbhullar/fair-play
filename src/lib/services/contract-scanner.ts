@@ -1,5 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@/lib/db'
+import {
+  nilMarketData,
+  problematicClauses,
+  cscData,
+  revenueSharing,
+  agentRegulation,
+  expertQuotes,
+} from '@/lib/data/nil-knowledge-base'
 
 export interface RedFlag {
   name: string
@@ -83,11 +91,18 @@ export async function scanContract(
   }
 }
 
+// Map database severity to display format (just lowercase)
+function mapSeverity(dbSeverity: string): RedFlag['severity'] {
+  const severity = dbSeverity.toLowerCase()
+  if (severity === 'critical' || severity === 'high' || severity === 'medium' || severity === 'low') {
+    return severity
+  }
+  return 'medium' // fallback
+}
+
 async function checkDatabasePatterns(contractText: string): Promise<RedFlag[]> {
   const patterns = await prisma.contractRedFlagPattern.findMany()
   const redFlags: RedFlag[] = []
-
-  const textLower = contractText.toLowerCase()
 
   for (const pattern of patterns) {
     if (pattern.patternType === 'REGEX' || pattern.patternType === 'KEYWORD') {
@@ -98,7 +113,7 @@ async function checkDatabasePatterns(contractText: string): Promise<RedFlag[]> {
         if (matches && matches.length > 0) {
           redFlags.push({
             name: pattern.name,
-            severity: pattern.severity.toLowerCase() as RedFlag['severity'],
+            severity: mapSeverity(pattern.severity),
             excerpt: matches[0].substring(0, 100) + (matches[0].length > 100 ? '...' : ''),
             explanation: pattern.explanation,
             recommendation: pattern.recommendation,
@@ -142,7 +157,12 @@ ${getSchoolSpecificGuidance(athleteContext)}
 `
   }
 
+  // Get current NIL landscape context
+  const nilLandscape = getNILLandscapeContext()
+
   const prompt = `You are an expert NIL (Name, Image, Likeness) contract analyst helping college athletes understand their contracts.
+
+${nilLandscape}
 ${contextSection}
 Analyze the following contract and provide:
 1. A plain-English summary (2-3 sentences, written for a college student)
@@ -563,6 +583,46 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   const pdfParse = (await import('pdf-parse')).default
   const data = await pdfParse(buffer)
   return data.text
+}
+
+// Generate current NIL landscape context for the AI
+function getNILLandscapeContext(): string {
+  return `
+CURRENT NIL LANDSCAPE (January 2026):
+- Total NIL market: $${(nilMarketData.marketSize.fy2026Projected / 1_000_000_000).toFixed(2)}B projected for 2025-26
+- ${(nilMarketData.collectiveShare * 100).toFixed(1)}% of NIL money comes from collectives
+- Only ${(nilMarketData.percentEarningOver50k * 100).toFixed(0)}% of athletes earn >$50K annually
+- Median NIL earnings: $${nilMarketData.medianNIL.toLocaleString()} (average is misleading at $${nilMarketData.averageNIL.toLocaleString()})
+- Athletes with agents earn ${nilMarketData.agentPremium}x more than unrepresented
+- Transfer portal athletes earn ${nilMarketData.transferPremium}x more
+
+REVENUE SHARING VS THIRD-PARTY NIL:
+- School revenue sharing is CAPPED at $${(revenueSharing.currentCap / 1_000_000).toFixed(1)}M per year
+- Third-party NIL deals (collectives) have NO CAP
+- Many schools are spending $25M+ by routing money through collectives
+- CSC has rejected ~${(cscData.rejectionRate * 100).toFixed(0)}% of submitted deals by value
+
+CSC REJECTION REASONS TO FLAG:
+${cscData.rejectionReasons.map(r => `- ${r}`).join('\n')}
+
+KNOWN PROBLEMATIC CONTRACT PATTERNS (from recent investigations):
+1. Transfer restrictions: "${problematicClauses.transferRestrictions.redFlagLanguage[0]}"
+2. Unilateral termination: School can cancel "at any time...in sole and absolute discretion"
+3. Asymmetric buyouts: Athlete must repay if leaving; school owes nothing
+4. Employment waivers: Requiring athletes to waive employee status
+5. Performance clauses: Payment tied to playing time (potential NCAA violation)
+6. Broad NIL rights: "signature, initials, photograph, gifs, visible tattoo artwork, voice"
+
+AGENT REGULATION WARNING:
+- Many NIL "agents" are unregulated family members with no credentials
+- State registration requirements vary (California requires $100K bond; Arizona requires nothing)
+- FTC is investigating 20+ universities for agent law violations
+- Standard agent commission is 10-15% for NIL; anything higher is a red flag
+- HUSTLE Act would cap fees at 5% if passed
+
+EXPERT CONTEXT:
+${expertQuotes.slice(0, 2).map(q => `- "${q.quote}" — ${q.author}`).join('\n')}
+`
 }
 
 // School and conference-specific guidance for the AI
