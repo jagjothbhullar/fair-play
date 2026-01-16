@@ -7,7 +7,7 @@ export interface ComplianceCheckResult {
   title: string
   status: ComplianceCheckStatus
   message: string
-  severity: 'ERROR' | 'WARNING' | 'INFO'
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
 }
 
 export interface ComplianceReport {
