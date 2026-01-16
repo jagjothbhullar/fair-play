@@ -81,12 +81,14 @@ export default function HomePage() {
               </svg>
             </span>
           </Link>
-          <p className="text-center text-white/40 text-sm mt-4">
-            Already have an account?{' '}
-            <Link href="/login" className="text-emerald-400 hover:text-emerald-300">
-              Sign in
-            </Link>
-          </p>
+          <div className="mt-4 bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-center">
+            <p className="text-white/40 text-sm">
+              Already have an account?{' '}
+              <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
 
         {/* Features */}
